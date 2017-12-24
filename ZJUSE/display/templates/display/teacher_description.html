@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+	<head>
+        <meta charset="utf-8" />
+		<title>教师介绍</title>
+	</head>
+	<body>
+        <h1>{{ teacher.name }}</h1>
+        <h2>以往教学</h2>
+        <p>{{ teacher.experience }}</p>
+        <h2>科研成果</h2>
+        <p>{{ teacher.research }}</p>
+        <h2>教学风格</h2>
+        <p>{{ teacher.style }}</p>
+        <h2>出版书籍</h2>
+        <p>{{ teacher.publication }}</p>
+        <h2>所获荣誉</h2>
+        <p>{{ teacher.honor }}</p>
+        <h2>联系方式</h2>
+        <p>{{ teacher.contact }}</p>
+        <h2>备注</h2>
+        <p>{{ teacher.other }}</p>
+        <h2>开设课程</h2>
+        <ul>
+            {% for class in class_set %}
+            <li>
+                <a href="{% url 'course_description' class.course.id %}">{{ class.course.name }}</a>
+                {{ class.name }}
+                {{ class.time }}
+            </li>
+            {% endfor %}
+        </ul>
+        <h2>最新文章</h2>
+        <ul>
+            {% for article in article_set %}
+            <li>
+                <a href="{% url 'article_detail' article.id %}">{{ article.title }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+	</body>
+</html>

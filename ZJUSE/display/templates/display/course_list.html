@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+	<head>
+        <meta charset="utf-8" />
+		<title>课程列表</title>
+	</head>
+	<body>
+        <h1>课程列表</h1>
+        <ul>
+            {% for course in course_set %}
+            <li><a href="{% url 'course_description' course.id %}">{{ course.name }}</a></li>
+            {% endfor %}
+        </ul>
+	</body>
+</html>

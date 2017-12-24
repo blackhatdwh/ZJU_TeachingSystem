@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Index</title>
+    </head>
+    <body>
+        <h1>ZJUSE</h1>
+        <p>welcome <a href="{% url 'teacher_description' teacher.user.id %}">{{ teacher.name }}</a>!<a href="{% url 'logout' %}">Logout</a></p>
+        <h2>我发布的通知</h2>
+        <ul>
+            {% for notification in notification_set %}
+            <li>
+                {{ notification.clazz.name }}
+                <a href="{% url 'notification_detail' notification.id %}">{{ notification.title }}</a>
+                {{ notification.pub_date }}
+            </li>
+            {% endfor %}
+        </ul>
+        <h2>我的课程</h2>
+        <ul>
+            {% for class in class_set %}
+            <li>
+                <a href="{% url 'course_description' class.course.id %}">{{ class.course.name }}</a>
+                <a href="{% url 'teacher_class' class.id %}">{{ class.name }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+        <h2>本班作业</h2>
+        <ul>
+            {% for homework in homework_set %}
+            <li>
+                <a href="{% url 'teacher_class' homework.clazz.id %}">{{ homework.clazz.name }}</a>
+                <a href="{% url 'teacher_check_homework' homework.id %}">{{ homework.title }}</a>
+                {{ homework.ddl }}
+                {{ homework.check_status }}
+            </li>
+            {% endfor %}
+        </ul>
+        <h2>我的文章</h2>
+        <ul>
+            {% for article in article_set %}
+            <li>
+                <a href="{% url 'article_detail' article.id %}">{{ article.title }}</a>
+                {{ article.pub_date }}
+            </li>
+            {% endfor %}
+        </ul>
+    </body>
+</html>

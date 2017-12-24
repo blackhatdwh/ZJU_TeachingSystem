@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+	<head>
+        <meta charset="utf-8" />
+		<title>我的班级</title>
+	</head>
+	<body>
+        <h1><a href="{% url 'teacher_class' class.id %}">{{ class.name }}</a>{{ homework.title }}</h1>
+        <h2>已提交</h2>
+        <ul>
+            {% for finish in finished_set %}
+            <li>
+                <a href="{% url 'teacher_check_detail' finish.id %}">
+                {{ finish.student.name }}
+                {{ finish.score }}
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+        <h2>未提交</h2>
+        <ul>
+            {% for finish in unfinished_set %}
+            <li>
+                {{ finish.student.name }}
+            </li>
+            {% endfor %}
+        </ul>
+
+	</body>
+</html>

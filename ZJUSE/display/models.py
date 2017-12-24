@@ -31,13 +31,16 @@ class Teacher(models.Model):
     honor = models.TextField(blank=True)
     contact = models.TextField(blank=True)
     other = models.TextField(blank=True)
+    def __str__(self):
+        return self.name
 
 class Student(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=50)
+    def __str__(self):
+        return self.name
 
 class Course(models.Model):
-    course_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=50)
     plan = models.TextField(blank=True)
     book = models.TextField(blank=True)
@@ -45,51 +48,74 @@ class Course(models.Model):
     exam = models.TextField(blank=True)
     knowledge = models.TextField(blank=True)
     project = models.TextField(blank=True)
+    def __str__(self):
+        return self.name
 
 class Class(models.Model):
-    class_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=20)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     time = models.TextField(blank=True)
+    def __str__(self):
+        return self.name
 
 class Teaches(models.Model):
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
-    classes = models.ForeignKey(Class, on_delete=models.CASCADE)
+    clazz = models.ForeignKey(Class, on_delete=models.CASCADE)
 
 class Join(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    classes = models.ForeignKey(Class, on_delete=models.CASCADE)
+    clazz = models.ForeignKey(Class, on_delete=models.CASCADE)
 
-class Information(models.Model):
+class Article(models.Model):
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
     title = models.CharField(max_length=50)
     content = models.TextField()
+    attach_file = models.FileField(upload_to='article_file/', blank=True)
+    pub_date = models.DateTimeField()
+    def __str__(self):
+        return self.title
 
-class Message(models.Model):
-    classes = models.ForeignKey(Class, on_delete=models.CASCADE)
+class Notification(models.Model):
+    clazz = models.ForeignKey(Class, on_delete=models.CASCADE)
     title = models.CharField(max_length=50)
     content = models.TextField()
+    pub_date = models.DateTimeField()
+    publisher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
+    def __str__(self):
+        return self.title
 
 class Resource(models.Model):
-    classes = models.ForeignKey(Class, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
     title = models.CharField(max_length=50)
+    description = models.CharField(max_length=100, blank=True)
     files = models.FileField(upload_to='resource/')
-    simple_file = models.FileField(upload_to='resource/')
+    simple_file = models.FileField(upload_to='resource/', blank=True)
+    pub_date = models.DateTimeField()
+    uploader = models.ForeignKey(Teacher, on_delete=models.CASCADE)
+    def __str__(self):
+        return self.title
 
 class Link(models.Model):
     name = models.CharField(max_length=20)
     address = models.URLField()
+    def __str__(self):
+        return self.name
 
 class Homework(models.Model):
-    classes = models.ForeignKey(Class, on_delete=models.CASCADE)
+    clazz = models.ForeignKey(Class, on_delete=models.CASCADE)
     title = models.CharField(max_length=20)
     content = models.TextField()
-    files = models.FileField(upload_to='resource/homework/')
+    attached_file = models.FileField(upload_to='resource/homework/', blank=True)
+    pub_date = models.DateTimeField()
+    weight = models.IntegerField()
     ddl = models.DateTimeField()
+    def __str__(self):
+        return self.title
 
 class Finish(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    upload_time = models.DateTimeField()
-    files = models.FileField(upload_to='homework/')
-    score = models.IntegerField()
-    evaluation = models.TextField()
+    homework = models.ForeignKey(Homework, on_delete=models.CASCADE)
+    upload_time = models.DateTimeField(blank=True, null=True)
+    upload_file = models.FileField(upload_to='homework/', blank=True)
+    score = models.IntegerField(default=0)
+    evaluation = models.TextField(blank=True)

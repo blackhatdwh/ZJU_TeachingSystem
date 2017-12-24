@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+	<head>
+        <meta charset="utf-8" />
+		<title>我的班级</title>
+	</head>
+	<body>
+        <h1><a href="{% url 'course_description' class.course.id %}">{{ class.course.name }}</a>{{ class.name }}</h1>
+        <h2>课程通知</h2>
+        <ul>
+        {% for notification in notification_set %}
+        <li>
+            <a href="{% url 'notification_detail' notification.id %}">{{ notification.title }}</a>
+            {{ notification.pub_date }}
+        </li>
+        {% endfor %}
+        </ul>
+        <h2>课程作业</h2>
+        平均分：{{ homework_average_score }}
+        <ul>
+        {% for homework in homework_set %}
+        <li>
+            <a href="{% url 'student_homework' homework.id %}">{{ homework.title }}</a>
+            DDL:
+            {{ homework.ddl }}
+            {{ homework.status }}
+        </li>
+        {% endfor %}
+        </ul>
+        <h2>课程资源</h2>
+        <ul>
+        {% for resource in resource_set %}
+        <li>
+            <a href="">{{ resource.title }}</a>
+        </li>
+        {% endfor %}
+        </ul>
+
+	</body>
+</html>
