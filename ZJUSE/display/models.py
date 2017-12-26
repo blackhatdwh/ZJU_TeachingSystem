@@ -70,7 +70,7 @@ class Article(models.Model):
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
     title = models.CharField(max_length=50)
     content = models.TextField()
-    attach_file = models.FileField(upload_to='article_file/', blank=True)
+    attached_file = models.FileField(upload_to='article_file/', blank=True)
     pub_date = models.DateTimeField()
     def __str__(self):
         return self.title

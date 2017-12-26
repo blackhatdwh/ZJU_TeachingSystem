@@ -8,8 +8,17 @@ urlpatterns = [
     url(r'^logout/$', views.log_out, name='logout'),
     url(r'^course_description/(?P<course_id>[0-9]+)/$', views.course_description, name='course_description'),
     url(r'^teacher_description/(?P<user_id>[0-9]+)/$', views.teacher_description, name='teacher_description'),
-    url(r'^article/(?P<article_id>[0-9]+)', views.article_detail, name='article_detail'),
+
+    url(r'^article/(?P<article_id>[0-9]+)/$', views.article_detail, name='article_detail'),
+    url(r'^article/add/$', views.add_article, name='add_article'),
+    #url(r'^article/(?P<article_id>[0-9]+)/modify/$', views.modify_article, name='modify_article'),
+    #url(r'^article/(?P<article_id>[0-9]+)/delete/$', views.delete_article, name='delete_article'),
+
     url(r'^notification/(?P<notification_id>[0-9]+)/$', views.notification_detail, name='notification_detail'),
+    url(r'^notification/add/$', views.add_notification, name='add_notification'),
+    url(r'^notification/(?P<notification_id>[0-9]+)/modify/$', views.modify_notification, name='modify_notification'),
+    url(r'^notification/(?P<notification_id>[0-9]+)/delete/$', views.delete_notification, name='delete_notification'),
+
     url(r'modify_teacher_description/$', views.modify_teacher_description, name='modify_teacher_description'),
     url(r'modify_course_description/(?P<course_id>[0-9]+)/$', views.modify_course_description, name='modify_course_description'),
     url(r'^teacher/$', views.teacher_index, name='teacher_index'),

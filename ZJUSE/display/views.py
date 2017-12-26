@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
+from django.http import HttpResponse
 from .models import *
 from .forms import *
 
@@ -51,7 +52,7 @@ def index(request):
     else:
         return redirect(reverse('guest_index'))
     
-#partly done
+#done
 def teacher_index(request):
     if request.user.is_authenticated() and request.user.groups.all().first().name == 'Teacher':
         teacher = Teacher.objects.get(user=request.user)
@@ -81,10 +82,10 @@ def teacher_index(request):
         }
         return render(request, 'display/teacher_index.html', context)
     else:
-        pass
         #you are not a teacher!
+        return redirect(reverse('index'))
 
-#partly done
+#done
 def teacher_my_class(request, class_id):
     if request.user.is_authenticated() and request.user.groups.all().first().name == 'Teacher':
         clazz = Class.objects.get(id=class_id)
@@ -103,7 +104,7 @@ def teacher_my_class(request, class_id):
         #you are not a teacher!
         return redirect(reverse('index'))
 
-#partly done
+#done
 def teacher_check_homework(request, homework_id):
     if request.user.is_authenticated() and request.user.groups.all().first().name == 'Teacher':
         homework = Homework.objects.get(id=homework_id)
@@ -115,8 +116,11 @@ def teacher_check_homework(request, homework_id):
                 'unfinished_set': unfinished_set,
                 }
         return render(request, 'display/teacher_check_homework.html', context)
+    else:
+        #you are not a teacher
+        return redirect(reverse('index'))
 
-#partly done
+#done
 def teacher_check_detail(request, finish_id):
     if request.user.is_authenticated() and request.user.groups.all().first().name == 'Teacher':
         finish = Finish.objects.get(id=finish_id)
@@ -126,8 +130,96 @@ def teacher_check_detail(request, finish_id):
                 }
         return render(request, 'display/teacher_check_detail.html', context)
     else:
-        pass
         #you are not a teacher
+        return redirect(reverse('index'))
+
+def add_notification(request):
+    if request.user.is_authenticated() and request.user.groups.all().first().name == 'Teacher':
+        teacher = Teacher.objects.get(user=request.user)
+    else:
+        #you are not a teacher
+        return redirect(reverse('index'))
+    if request.method == 'POST':
+        form = NotificationForm(request.POST)
+        if form.is_valid():
+            clazz = form.cleaned_data['clazz']
+            title = form.cleaned_data['title']
+            content = form.cleaned_data['content']
+            new_notification = Notification(clazz=clazz, title=title, content=content, pub_date=timezone.localtime(timezone.now()), publisher=teacher)
+            new_notification.save()
+        else:
+            return HttpResponse('<script>alert("failed!");</script>')
+        return HttpResponse('Add succeeded!')
+    else:
+        form = NotificationForm(initial={'operation': 'add'})
+        context = {
+            'form': form,
+            'teacher': teacher,
+        }
+        return render(request, 'display/add_notification.html', context)
+
+def modify_notification(request, notification_id):
+    if request.user.is_authenticated() and request.user.groups.all().first().name == 'Teacher':
+        teacher = Teacher.objects.get(user=request.user)
+        notification = Notification.objects.get(id=notification_id)
+    else:
+        #you are not a teacher
+        return redirect(reverse('index'))
+    if request.method == 'POST':
+        form = NotificationForm(request.POST)
+        if form.is_valid():
+            notification.clazz = form.cleaned_data['clazz']
+            notification.title = form.cleaned_data['title']
+            notification.content = form.cleaned_data['content']
+            notification.save()
+        else:
+            return HttpResponse('<script>alert("failed!");</script>')
+        return HttpResponse('Modify succeeded!')
+    else:
+        initial = {
+                'operation': 'modify',
+                'clazz': notification.clazz,
+                'title': notification.title,
+                'content': notification.content,
+                }
+        form = NotificationForm(initial=initial)
+        context = {
+            'form': form,
+            'teacher': teacher,
+            'notification': notification,
+        }
+        return render(request, 'display/modify_notification.html', context)
+
+def delete_notification(request, notification_id):
+    if request.user.is_authenticated() and request.user.groups.all().first().name == 'Teacher':
+        teacher = Teacher.objects.get(user=request.user)
+        notification = Notification.objects.get(id=notification_id)
+    else:
+        #you are not a teacher
+        return redirect(reverse('index'))
+    if request.method == 'POST':
+        form = NotificationForm(request.POST)
+        if form.is_valid():
+            if form.cleaned_data['operation'] == 'delete':
+                notification.delete()
+        else:
+            return HttpResponse('<script>alert("failed!");</script>')
+        return HttpResponse('delete succeeded!')
+    else:
+        initial = {
+                'operation': 'delete',
+                'course': notification.clazz.course,
+                'clazz': notification.clazz,
+                'title': notification.title,
+                'content': notification.content,
+                }
+        form = NotificationForm(initial=initial)
+        context = {
+            'form': form,
+            'notification': notification,
+        }
+        return render(request, 'display/delete_notification.html', context)
+
 
 
 #partly done
@@ -238,7 +330,6 @@ def student_homework(request, homework_id):
                     'rank': rank,
                     'total': len(score_list)
                     }
-            print(len(score_list))
             return render(request, 'display/student_view_homework.html', context)
     else:
         return redirect(reverse('index'))
@@ -280,7 +371,7 @@ def modify_teacher_description(request):
         return redirect(reverse('index'))
     teacher = Teacher.objects.get(user=request.user)
     if request.method == 'POST':
-        form = TeacherDescription(request.POST)
+        form = TeacherForm(request.POST)
         if form.is_valid():
             teacher.name = form.cleaned_data['name']
             teacher.experience= form.cleaned_data['experience']
@@ -295,7 +386,17 @@ def modify_teacher_description(request):
             return HttpResponse('<script>alert("failed!");</script>')
         return HttpResponse('Modify succeeded!')
     else:
-        form = TeacherDescription()
+        initial = {
+                'name': teacher.name,
+                'experience': teacher.experience,
+                'research': teacher.research,
+                'style': teacher.style,
+                'publication': teacher.publication,
+                'honor': teacher.honor,
+                'contact': teacher.contact,
+                'other': teacher.other,
+                }
+        form = TeacherForm(initial=initial)
         context = {
             'form': form,
             'teacher': teacher,
@@ -344,6 +445,31 @@ def modify_course_description(request, course_id):
 def article_detail(request, article_id):
     article = Article.objects.get(id=article_id)
     return render(request, 'display/article_detail.html', {'article': article})
+
+def add_article(request):
+    if request.user.is_authenticated() and request.user.groups.all().first().name == 'Teacher':
+        teacher = Teacher.objects.get(user=request.user)
+    else:
+        #you are not a teacher
+        return redirect(reverse('index'))
+    if request.method == 'POST':
+        form = ArticleForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            #title = form.cleaned_data['title']
+            #content = form.cleaned_data['content']
+            #new_notification = Notification(clazz=clazz, title=title, content=content, pub_date=timezone.localtime(timezone.now()), publisher=teacher)
+            #new_notification.save()
+        else:
+            return HttpResponse('<script>alert("failed!");</script>')
+        return HttpResponse('Add succeeded!')
+    else:
+        form = ArticleForm(initial={'teacher': teacher, 'pub_date': timezone.localtime(timezone.now())})
+        context = {
+            'form': form,
+            'teacher': teacher,
+        }
+        return render(request, 'display/add_article.html', context)
 
 #done
 def course_list(request):
