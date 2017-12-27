@@ -4,11 +4,15 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 # Create your models here.
+class PasswordQuestion(models.Model):
+    question = models.CharField(max_length=50)
+    def __str__(self):
+        return self.question
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     school_id = models.CharField(max_length=20)
-    question = models.CharField(max_length=50)
+    question = models.ForeignKey(PasswordQuestion, on_delete=models.CASCADE, blank=True, null=True)
     answer = models.CharField(max_length=50)
 
 @receiver(post_save, sender=User)
@@ -20,6 +24,7 @@ def create_user_profile(sender, instance, created, **kwargs):
 def save_user_profile(sender, instance, **kwargs):
     instance.profile.school_id = instance.username
     instance.profile.save()
+
 
 class Teacher(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -61,10 +66,14 @@ class Class(models.Model):
 class Teaches(models.Model):
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
     clazz = models.ForeignKey(Class, on_delete=models.CASCADE)
+    def __str__(self):
+        return self.teacher.name + ' ' + self.clazz.name
 
 class Join(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     clazz = models.ForeignKey(Class, on_delete=models.CASCADE)
+    def __str__(self):
+        return self.student.name + ' ' + self.clazz.name
 
 class Article(models.Model):
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
@@ -119,3 +128,6 @@ class Finish(models.Model):
     upload_file = models.FileField(upload_to='homework/', blank=True)
     score = models.IntegerField(default=0)
     evaluation = models.TextField(blank=True)
+    checked = models.BooleanField(default=True)
+    def __str__(self):
+        return self.student.name + ' ' + self.homework.title

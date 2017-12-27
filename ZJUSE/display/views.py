@@ -2,6 +2,7 @@ from django.urls import reverse
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.hashers import check_password
 from django.utils import timezone
 from django.http import HttpResponse
 from .models import *
@@ -9,10 +10,11 @@ from .forms import *
 
 from statistics import mean
 import datetime
+from .utils import GenerateDate
 
 def homework_status(student, homework):
     homework.status = 'normal'
-    if Finish.objects.filter(student=student, homework=homework).exclude(upload_time__isnull=True).count() == 0:
+    if Finish.objects.get(student=student, homework=homework).upload_time != None:
         homework.status = 'done'
     elif homework.ddl - timezone.localtime(timezone.now()) < datetime.timedelta(hours=12) and timezone.localtime(timezone.now()) < homework.ddl:
         homework.status = 'emergency'
@@ -43,8 +45,77 @@ def log_out(request):
     logout(request)
     return redirect(reverse('index'))
 
+@login_required
+def change_password(request):
+    if request.method == 'POST':
+        form = ChangePass(request.POST)
+        if form.is_valid():
+            old_passwd = form.cleaned_data['old_passwd']
+            print(old_passwd)
+            new_passwd_1 = form.cleaned_data['new_passwd_1']
+            new_passwd_2 = form.cleaned_data['new_passwd_2']
+            if check_password(old_passwd, request.user.password):
+                if new_passwd_1 == new_passwd_2:
+                    request.user.set_password(new_passwd_1)
+                    request.user.save()
+                    return redirect(reverse('logout'))
+                else:
+                    return HttpResponse(r"<script>alert('两次密码不同!');</script>")
+            else:
+                return HttpResponse(r"<script>alert('旧密码错误!');</script>")
+        else:
+            return HttpResponse(r"<script>alert('failed!');</script>")
+        return redirect(reverse('index'))
+    else:
+        form = ChangePass()
+        context = {
+                'form': form,
+                }
+        return render(request, 'display/change_password.html', context)
+
+@login_required
+def set_password_question(request):
+    if request.method == 'POST':
+        form = PasswordQuestionForm(request.POST)
+        if form.is_valid():
+            request.user.profile.question = PasswordQuestion.objects.get(question=form.cleaned_data['question'])
+            request.user.profile.answer = form.cleaned_data['answer']
+            request.user.profile.save()
+        else:
+            return HttpResponse('<script>alert("failed!");</script>')
+        return HttpResponse('Add succeeded!')
+    else:
+        form = PasswordQuestionForm()
+        context = {
+            'form': form,
+        }
+        return render(request, 'display/set_password_question.html', context)
+
+@login_required
+def change_password_using_question(request):
+    if request.method == 'POST':
+        form = ChangePassUsingQuestion(request.POST)
+        if form.is_valid():
+            if request.user.profile.question == PasswordQuestion.objects.get(question=form.cleaned_data['question']):
+                if request.user.profile.answer == form.cleaned_data['answer']:
+                    if form.cleaned_data['new_passwd_1'] == form.cleaned_data['new_passwd_2']:
+                        request.user.set_password(form.cleaned_data['new_passwd_1'])
+                        return redirect(reverse('logout'))
+        return HttpResponse('<script>alert("failed!");</script>')
+    else:
+        form = ChangePassUsingQuestion()
+        context = {
+            'form': form,
+        }
+        return render(request, 'display/change_password_using_question.html', context)
+
+
+
 #done
 def index(request):
+    if request.user.is_authenticated() and request.user.profile.answer == '':
+        print("set password question")
+        return redirect(reverse('set_password_question'))
     if request.user.is_authenticated() and request.user.groups.all().first().name == 'Teacher':
         return redirect(reverse('teacher_index'))
     elif request.user.is_authenticated() and request.user.groups.all().first().name == 'Student':
@@ -63,9 +134,11 @@ def teacher_index(request):
             class_set.add(teaches.clazz)
         homework_set = Homework.objects.filter(clazz__in=class_set)
         for homework in homework_set:
-            unchecked_set = Finish.objects.filter(homework=homework, score__isnull=True)
-            checked_set = Finish.objects.filter(homework=homework).exclude(score__isnull=True)
-            if len(unchecked_set) == 0:
+            unchecked_set = Finish.objects.filter(homework=homework, checked=False)
+            checked_set = Finish.objects.filter(homework=homework, checked=True)
+            if timezone.localtime(timezone.now()) < homework.ddl:
+                homework.check_status = '尚未截止'
+            elif len(unchecked_set) == 0:
                 homework.check_status = '批改完成'
             elif len(checked_set) == 0:
                 homework.check_status = '未批改'
@@ -104,6 +177,111 @@ def teacher_my_class(request, class_id):
         #you are not a teacher!
         return redirect(reverse('index'))
 
+@login_required
+def add_homework(request):
+    if request.user.groups.all().first().name == 'Teacher':
+        teacher = Teacher.objects.get(user=request.user)
+    else:
+        return redirect(reverse('index'))
+    if request.method == 'POST':
+        request.POST = request.POST.copy()
+        request.POST['pub_date'] = timezone.localtime(timezone.now())
+        request.POST['ddl'] = GenerateDate(request.POST)
+
+        form = HomeworkForm(request.POST)
+        if form.is_valid():
+            form.save()
+        else:
+            return HttpResponse('<script>alert("failed!");</script>')
+        newly_added_homework = Homework.objects.order_by('-id').first()
+        clazz = newly_added_homework.clazz
+        join_set = Join.objects.filter(clazz=clazz)
+        for join in join_set:
+            finish = Finish(student=join.student, homework=newly_added_homework)
+            finish.save()
+        return HttpResponse('Add succeeded!')
+    else:
+        initial = {
+                'pub_date': None,
+                'ddl': None,
+                }
+        form = HomeworkForm(initial=initial)
+        context = {
+            'form': form,
+        }
+        return render(request, 'display/add_homework.html', context)
+
+@login_required
+def modify_homework(request, homework_id):
+    if request.user.groups.all().first().name == 'Teacher':
+        teacher = Teacher.objects.get(user=request.user)
+    else:
+        return redirect(reverse('index'))
+    homework = Homework.objects.get(id=homework_id)
+    if request.method == 'POST':
+        request.POST = request.POST.copy()
+        request.POST['pub_date'] = timezone.localtime(timezone.now())
+        request.POST['ddl'] = GenerateDate(request.POST)
+
+        form = HomeworkForm(request.POST, request.FILES)
+        if form.is_valid():
+            homework.clazz = form.cleaned_data['clazz']
+            homework.title = form.cleaned_data['title']
+            homework.content = form.cleaned_data['content']
+            try:
+                homework.attached_file = request.FILES['attached_file']
+            except:
+                pass
+            homework.pub_date = form.cleaned_data['pub_date']
+            homework.weight = form.cleaned_data['weight']
+            homework.ddl = form.cleaned_data['ddl']
+            homework.save()
+        else:
+            return HttpResponse('<script>alert("failed!");</script>')
+        return HttpResponse('Add succeeded!')
+    else:
+        initial = {
+                'clazz': homework.clazz,
+                'title': homework.title,
+                'content': homework.content,
+                'attached_file': homework.attached_file,
+                'weight': homework.weight,
+                'ddl': homework.ddl,
+                'ddl_date': homework.ddl.date,
+                'ddl_time': homework.ddl.time,
+                }
+        form = HomeworkForm(initial=initial)
+        context = {
+            'form': form,
+            'homework': homework,
+        }
+        return render(request, 'display/modify_homework.html', context)
+
+
+@login_required
+def delete_homework(request, homework_id):
+    if request.user.groups.all().first().name == 'Teacher':
+        teacher = Teacher.objects.get(user=request.user)
+    else:
+        return redirect(reverse('index'))
+    homework = Homework.objects.get(id=homework_id)
+    if request.method == 'POST':
+        form = DeleteForm(request.POST)
+        if form.is_valid():
+            if form.cleaned_data['confirm'] == 'True':
+                homework.delete()
+        else:
+            return HttpResponse('<script>alert("failed!");</script>')
+        return HttpResponse('Add succeeded!')
+    else:
+        form = DeleteForm(initial={'confirm': 'True'})
+        context = {
+            'form': form,
+            'homework': homework,
+        }
+        return render(request, 'display/delete_homework.html', context)
+
+
 #done
 def teacher_check_homework(request, homework_id):
     if request.user.is_authenticated() and request.user.groups.all().first().name == 'Teacher':
@@ -111,7 +289,7 @@ def teacher_check_homework(request, homework_id):
         finished_set = Finish.objects.filter(homework=homework).exclude(upload_time__isnull=True)
         unfinished_set = Finish.objects.filter(homework=homework, upload_time__isnull=True)
         context = {
-                'class': homework.clazz,
+                'homework': homework,
                 'finished_set': finished_set,
                 'unfinished_set': unfinished_set,
                 }
@@ -121,17 +299,36 @@ def teacher_check_homework(request, homework_id):
         return redirect(reverse('index'))
 
 #done
+@login_required
 def teacher_check_detail(request, finish_id):
-    if request.user.is_authenticated() and request.user.groups.all().first().name == 'Teacher':
+    if request.user.groups.all().first().name == 'Teacher':
         finish = Finish.objects.get(id=finish_id)
-        context = {
-                'student': finish.student,
-                'finish': finish,
-                }
-        return render(request, 'display/teacher_check_detail.html', context)
     else:
         #you are not a teacher
         return redirect(reverse('index'))
+
+    if request.method == 'POST':
+        form = TeacherCheckHomework(request.POST)
+        if form.is_valid():
+            finish.score = int(form.cleaned_data['score'])
+            finish.evaluation = form.cleaned_data['evaluation']
+            finish.checked = True
+            finish.save()
+        else:
+            return HttpResponse('<script>alert("failed!");</script>')
+        return HttpResponse('Add succeeded!')
+    else:
+        initial = {
+                'score': finish.score,
+                'evaluation': finish.evaluation,
+                }
+        form = TeacherCheckHomework(initial=initial)
+        context = {
+                'student': finish.student,
+                'finish': finish,
+                'form': form,
+                }
+        return render(request, 'display/teacher_check_detail.html', context)
 
 def add_notification(request):
     if request.user.is_authenticated() and request.user.groups.all().first().name == 'Teacher':
@@ -151,7 +348,7 @@ def add_notification(request):
             return HttpResponse('<script>alert("failed!");</script>')
         return HttpResponse('Add succeeded!')
     else:
-        form = NotificationForm(initial={'operation': 'add'})
+        form = NotificationForm()
         context = {
             'form': form,
             'teacher': teacher,
@@ -177,7 +374,6 @@ def modify_notification(request, notification_id):
         return HttpResponse('Modify succeeded!')
     else:
         initial = {
-                'operation': 'modify',
                 'clazz': notification.clazz,
                 'title': notification.title,
                 'content': notification.content,
@@ -193,27 +389,23 @@ def modify_notification(request, notification_id):
 def delete_notification(request, notification_id):
     if request.user.is_authenticated() and request.user.groups.all().first().name == 'Teacher':
         teacher = Teacher.objects.get(user=request.user)
-        notification = Notification.objects.get(id=notification_id)
     else:
         #you are not a teacher
         return redirect(reverse('index'))
+    notification = Notification.objects.get(id=notification_id)
+    if notification.publisher != teacher:
+        return redirect(reverse('index'))
+
     if request.method == 'POST':
-        form = NotificationForm(request.POST)
+        form = DeleteForm(request.POST)
         if form.is_valid():
-            if form.cleaned_data['operation'] == 'delete':
+            if form.cleaned_data['confirm'] == 'True':
                 notification.delete()
         else:
             return HttpResponse('<script>alert("failed!");</script>')
         return HttpResponse('delete succeeded!')
     else:
-        initial = {
-                'operation': 'delete',
-                'course': notification.clazz.course,
-                'clazz': notification.clazz,
-                'title': notification.title,
-                'content': notification.content,
-                }
-        form = NotificationForm(initial=initial)
+        form = DeleteForm(initial={'confirm': 'True'})
         context = {
             'form': form,
             'notification': notification,
@@ -298,7 +490,7 @@ def student_others_class(request, class_id):
         return redirect(reverse('index'))
 
 #partly done
-def student_homework(request, homework_id):
+def student_view_homework(request, homework_id):
     if request.user.is_authenticated() and request.user.groups.all().first().name == 'Student':
         student = Student.objects.get(user=request.user)
         homework = Homework.objects.get(id=homework_id)
@@ -314,7 +506,7 @@ def student_homework(request, homework_id):
             for f in finish_set:
                 score_list.append(f.score)
             score_list.sort(reverse=True)
-            this_student_finish = Finish.objects.get(student=student)
+            this_student_finish = Finish.objects.get(student=student, homework=homework)
             try:
                 average_score = mean(score_list)
                 rank = score_list.index(this_student_finish.score) + 1
@@ -322,15 +514,44 @@ def student_homework(request, homework_id):
             except TypeError:
                 average_score = 0
                 rank = 0
+
+            initial = {
+                    'student': student,
+                    'homework': homework,
+                    'upload_time': None,
+                    }
+            form = StudentUploadHomeworkForm(initial=initial)
             context = {
                     'class': homework.clazz,
                     'homework': homework,
                     'finish': this_student_finish,
                     'average_score': average_score,
                     'rank': rank,
-                    'total': len(score_list)
+                    'total': len(score_list),
+                    'form': form,
                     }
             return render(request, 'display/student_view_homework.html', context)
+    else:
+        return redirect(reverse('index'))
+
+@login_required
+def student_upload_homework(request, finish_id):
+    student = Student.objects.get(user=request.user)
+    finish = Finish.objects.get(id=finish_id)
+    if finish.student != student:
+        return redirect(reverse('index'))
+    if request.method == 'POST':
+        request.POST = request.POST.copy()
+        request.POST['upload_time'] = timezone.localtime(timezone.now())
+        form = StudentUploadHomeworkForm(request.POST, request.FILES)
+        if form.is_valid():
+            finish.upload_file = request.FILES['upload_file']
+            finish.upload_time = request.POST['upload_time']
+            finish.checked = False
+            finish.save()
+        else:
+            return HttpResponse('<script>alert("failed!");</script>')
+        return HttpResponse('Add succeeded!')
     else:
         return redirect(reverse('index'))
 
@@ -387,14 +608,8 @@ def modify_teacher_description(request):
         return HttpResponse('Modify succeeded!')
     else:
         initial = {
-                'name': teacher.name,
-                'experience': teacher.experience,
-                'research': teacher.research,
-                'style': teacher.style,
-                'publication': teacher.publication,
-                'honor': teacher.honor,
-                'contact': teacher.contact,
-                'other': teacher.other,
+                'name': teacher.name, 'experience': teacher.experience, 'research': teacher.research, 'style': teacher.style,
+                'publication': teacher.publication, 'honor': teacher.honor, 'contact': teacher.contact, 'other': teacher.other,
                 }
         form = TeacherForm(initial=initial)
         context = {
@@ -444,7 +659,11 @@ def modify_course_description(request, course_id):
 #done
 def article_detail(request, article_id):
     article = Article.objects.get(id=article_id)
-    return render(request, 'display/article_detail.html', {'article': article})
+    if article.teacher.user == request.user:
+        authority = True
+    else:
+        authority = False
+    return render(request, 'display/article_detail.html', {'article': article, 'authority': authority})
 
 def add_article(request):
     if request.user.is_authenticated() and request.user.groups.all().first().name == 'Teacher':
@@ -453,23 +672,85 @@ def add_article(request):
         #you are not a teacher
         return redirect(reverse('index'))
     if request.method == 'POST':
+        request.POST = request.POST.copy()
+        request.POST['pub_date'] = timezone.localtime(timezone.now())
         form = ArticleForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
-            #title = form.cleaned_data['title']
-            #content = form.cleaned_data['content']
-            #new_notification = Notification(clazz=clazz, title=title, content=content, pub_date=timezone.localtime(timezone.now()), publisher=teacher)
-            #new_notification.save()
         else:
             return HttpResponse('<script>alert("failed!");</script>')
         return HttpResponse('Add succeeded!')
     else:
-        form = ArticleForm(initial={'teacher': teacher, 'pub_date': timezone.localtime(timezone.now())})
+        form = ArticleForm(initial={'teacher': teacher})
         context = {
             'form': form,
             'teacher': teacher,
         }
         return render(request, 'display/add_article.html', context)
+
+def modify_article(request, article_id):
+    if request.user.is_authenticated() and request.user.groups.all().first().name == 'Teacher':
+        teacher = Teacher.objects.get(user=request.user)
+    else:
+        #you are not a teacher
+        return redirect(reverse('index'))
+    article = Article.objects.get(id=article_id)
+    if article.teacher != teacher:
+        return redirect(reverse('index'))
+
+    if request.method == 'POST':
+        request.POST = request.POST.copy()
+        request.POST['pub_date'] = timezone.localtime(timezone.now())
+        form = ArticleForm(request.POST, request.FILES)
+        if form.is_valid():
+            article.title = form.cleaned_data['title']
+            article.content = form.cleaned_data['content']
+            article.pub_date = form.cleaned_data['pub_date']
+            try:
+                article.attached_file = request.FILES['attached_file']
+            except:
+                article.attached_file = None
+            article.save()
+        else:
+            return HttpResponse('<script>alert("failed!");</script>')
+        return HttpResponse('Add succeeded!')
+    else:
+        initial = {
+                'teacher': article.teacher, 'title': article.title, 'content': article.content,
+                'attached_file': article.attached_file, 'pub_date': article.pub_date,
+                }
+        form = ArticleForm(initial=initial)
+        context = {
+            'form': form, 'teacher': teacher, 'article': article,
+        }
+        return render(request, 'display/modify_article.html', context)
+
+def delete_article(request, article_id):
+    if request.user.is_authenticated() and request.user.groups.all().first().name == 'Teacher':
+        teacher = Teacher.objects.get(user=request.user)
+    else:
+        #you are not a teacher
+        return redirect(reverse('index'))
+    article = Article.objects.get(id=article_id)
+    if article.teacher != teacher:
+        return redirect(reverse('index'))
+    if request.method == 'POST':
+        form = DeleteForm(request.POST)
+        if form.is_valid():
+            if form.cleaned_data['confirm'] == 'True':
+                article.delete()
+        else:
+            return HttpResponse('<script>alert("failed!");</script>')
+        return HttpResponse('Add succeeded!')
+    else:
+        form = DeleteForm(initial={'confirm': 'True'})
+        context = {
+            'form': form,
+            'teacher': teacher,
+            'article': article,
+        }
+        return render(request, 'display/delete_article.html', context)
+
 
 #done
 def course_list(request):
@@ -484,5 +765,10 @@ def teacher_list(request):
 #done
 def notification_detail(request, notification_id):
     notification = Notification.objects.get(id=notification_id)
-    return render(request, 'display/notification_detail.html', {'notification': notification})
+    if request.user == notification.publisher.user:
+        authority = True
+    else:
+        authority = False
+
+    return render(request, 'display/notification_detail.html', {'notification': notification, 'authority': authority})
 

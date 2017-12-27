@@ -9,5 +9,8 @@
         <p>{{ notification.content }}</p>
         <p>{{ notification.pub_data }}</p>
         <p><a href="{% url 'teacher_description' notification.publisher.user.id %}">{{ notification.publisher.name }}</a></p>
+        {% if authority %}
+        <a href="{% url 'modify_notification' notification.id %}">修改通知</a>
+        {% endif %}
 	</body>
 </html>

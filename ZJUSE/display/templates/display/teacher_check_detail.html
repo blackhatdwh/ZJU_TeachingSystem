@@ -5,11 +5,15 @@
 		<title>作业</title>
 	</head>
 	<body>
-        <h1>finish.student.name</h1>
+        <h1>{{ finish.student.name }}</h1>
         提交时间：{{ finish.upload_time }}
-        <a href="">下载链接</a>
-        评分：
-        评语：
-
+        <a href="{{ finish.upload_file.url }}">下载链接</a>
+        <form action="{% url 'teacher_check_detail' finish.id %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <table>
+            {{ form }}
+            </table>
+            <input type="submit" value="Submit" />
+        </form>
 	</body>
 </html>

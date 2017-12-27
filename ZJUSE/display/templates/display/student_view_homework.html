@@ -13,8 +13,16 @@
         状态：{{ homework.status }}
         权重：{{ homework.weight }}
         最后提交于：{{ finish.upload_time }}
-        <a href="">提交</a>
-        <a href="">查看提交</a>
+        <form action="{% url 'student_upload_homework' finish.id %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <table>
+            {{ form }}
+            </table>
+            <input type="submit" value="提交" />
+        </form>
+        {% if finish.upload_file %}
+        <a href="{{ finish.upload_file.url }}">查看提交</a>
+        {% endif %}
         得分：{{ finish.score }}
         班级平均分：{{ average_score }}
         排名：{{ rank }} / {{ total }}

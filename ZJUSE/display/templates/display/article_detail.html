@@ -9,6 +9,11 @@
         <p><a href="{% url 'teacher_description' article.teacher.user.id %}">{{ article.teacher.name }}</a></p>
         <p>{{ article.pub_date }}</p>
         <p>{{ article.content }}</p>
-        <a href="">附件</a>
+        {% if article.attached_file %}
+        <a href="{{ article.attached_file.url }}">附件</a>
+        {% endif %}
+        {% if authority %}
+        <a href="{% url 'modify_article' article.id %}">修改文章</a>
+        {% endif %}
 	</body>
 </html>

@@ -5,7 +5,7 @@
 		<title>我的班级</title>
 	</head>
 	<body>
-        <h1><a href="{% url 'teacher_class' class.id %}">{{ class.name }}</a>{{ homework.title }}</h1>
+        <h1><a href="{% url 'teacher_class' homework.clazz.id %}">{{ homework.clazz.name }}</a>{{ homework.title }}</h1>
         <h2>已提交</h2>
         <ul>
             {% for finish in finished_set %}
@@ -25,6 +25,12 @@
             </li>
             {% endfor %}
         </ul>
-
+        {{ homework.title }}
+        {{ homework.content }}
+        {{ homework.ddl }}
+        {% if homework.attached_file %}
+        <a href="{{ homework.attached_file.url }}">附件</a>
+        {% endif %}
+        <a href="{% url 'modify_homework' homework.id %}">修改作业</a>
 	</body>
 </html>

@@ -33,7 +33,7 @@
             {% for homework in homework_set %}
             <li>
                 {{ homework.clazz.name }}
-                <a href="{% url 'student_homework' homework.id %}">{{ homework.title }}</a>
+                <a href="{% url 'student_view_homework' homework.id %}">{{ homework.title }}</a>
                 DDL:
                 {{ homework.ddl }}
                 {{ homework.status }}
