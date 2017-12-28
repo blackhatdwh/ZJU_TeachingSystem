@@ -11,6 +11,7 @@
 """
 from datetime import datetime, time
 from django.forms import widgets
+from .models import *
 
 class TimeSelectorWidget(widgets.MultiWidget):
     def __init__(self, attrs=None):
@@ -48,3 +49,17 @@ def GenerateDate(dict):
     hour = int(dict['ddl_time_0'])
     minute = int(dict['ddl_time_1'])
     return datetime(year=year, month=month, day=day, hour=hour, minute=minute)
+
+def GenerateCourseAndClassDict(teacher):
+    class_set = set([teaches.clazz for teaches in Teaches.objects.filter(teacher=teacher)])
+    course_and_class_dict = {}
+    for clazz in class_set:
+        try:
+            course_and_class_dict[clazz.course.__str__()].add(clazz.__str__())
+        except KeyError:
+            course_and_class_dict[clazz.course.__str__()] = set()
+            course_and_class_dict[clazz.course.__str__()].add(clazz.__str__())
+
+    for key in course_and_class_dict:
+        course_and_class_dict[key] = list(course_and_class_dict[key])
+    return course_and_class_dict

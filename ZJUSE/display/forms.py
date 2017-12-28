@@ -44,7 +44,7 @@ class CourseForm(forms.ModelForm):
                 }
 
 class NotificationForm(forms.Form):
-    course = forms.ModelChoiceField(label="课程", queryset=Course.objects.all())
+    course = forms.ModelChoiceField(label="课程", queryset=Course.objects.all(), required=False)
     clazz = forms.ModelChoiceField(label="班级", queryset=Class.objects.all())
     title = forms.CharField(label="标题", max_length=50)
     content = forms.CharField(label="内容", widget=forms.Textarea)
@@ -89,7 +89,7 @@ class ResourceForm(forms.ModelForm):
             self.fields['attached_file'].required = False
 
 class HomeworkForm(forms.ModelForm):
-    course = forms.ModelChoiceField(label="课程", queryset=Course.objects.all())
+    course = forms.ModelChoiceField(label="课程", queryset=Course.objects.all(), required=False)
     ddl_date = forms.DateField(widget=forms.SelectDateWidget)
     ddl_time = forms.TimeField(widget=TimeSelectorWidget())
     class Meta:

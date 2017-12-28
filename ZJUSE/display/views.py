@@ -10,8 +10,8 @@ from .models import *
 from .forms import *
 
 from statistics import mean
-import datetime, os, csv
-from .utils import GenerateDate
+import datetime, os, csv, json
+from .utils import GenerateDate, GenerateCourseAndClassDict
 
 def homework_status(student, homework):
     homework.status = 'normal'
@@ -205,8 +205,10 @@ def add_homework(request):
                 'ddl': None,
                 }
         form = HomeworkForm(initial=initial)
+        course_and_class_dict = GenerateCourseAndClassDict(teacher)
         context = {
             'form': form,
+            'course_and_class_dict': json.dumps(course_and_class_dict),
         }
         return render(request, 'display/add_homework.html', context)
 
@@ -356,9 +358,11 @@ def add_notification(request):
         return HttpResponse('Add succeeded!')
     else:
         form = NotificationForm()
+        course_and_class_dict = GenerateCourseAndClassDict(teacher)
         context = {
             'form': form,
             'teacher': teacher,
+            'course_and_class_dict': json.dumps(course_and_class_dict),
         }
         return render(request, 'display/add_notification.html', context)
 
