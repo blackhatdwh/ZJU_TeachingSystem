@@ -2,7 +2,7 @@
 <html>
 	<head>
         <meta charset="utf-8" />
-		<title>Course_Description</title>
+		<title>课程介绍</title>
 	</head>
 	<body>
         <h1>{{ course.name }}</h1>
@@ -21,9 +21,12 @@
         <h2>课程资源</h2>
         <ul>
             {% for resource in resource_set %}
-            <li><a href="">{{ resource.title }}</a></li>
+            <li><a href="{% url 'resource_detail' resource.id %}">{{ resource.title }}</a></li>
             {% endfor %}
         </ul>
+        {% if add_resource_authority %}
+        <a href="{% url 'add_resource' course.id %}">添加资源</a>
+        {% endif %}
         <h2>开设班级</h2>
         <ul>
             {% for tac in teacher_and_class_list %}

@@ -97,7 +97,7 @@ class Resource(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     title = models.CharField(max_length=50)
     description = models.CharField(max_length=100, blank=True)
-    files = models.FileField(upload_to='resource/')
+    attached_file = models.FileField(upload_to='resource/')
     simple_file = models.FileField(upload_to='resource/', blank=True)
     pub_date = models.DateTimeField()
     uploader = models.ForeignKey(Teacher, on_delete=models.CASCADE)

@@ -11,7 +11,17 @@ urlpatterns = [
     url(r'^change_password/$', views.change_password, name='change_password'),
     url(r'^set_password_question/$', views.set_password_question, name='set_password_question'),
     url(r'^change_password_using_question/$', views.change_password_using_question, name='change_password_using_question'),
-    url(r'^course_description/(?P<course_id>[0-9]+)/$', views.course_description, name='course_description'),
+
+    url(r'^add_student_to_system/$', views.add_student_to_system, name='add_student_to_system'),
+    url(r'^add_student_to_class/$', views.add_student_to_class, name='add_student_to_class'),
+
+    url(r'^course/(?P<course_id>[0-9]+)/$', views.course_detail, name='course_detail'),
+    url(r'^course/(?P<course_id>[0-9]+)/modify/$', views.modify_course, name='modify_course'),
+    url(r'^resource/(?P<resource_id>[0-9]+)/$', views.resource_detail, name='resource_detail'),
+    url(r'^course/(?P<course_id>[0-9]+)/resource/add/$', views.add_resource, name='add_resource'),
+    url(r'^resource/(?P<resource_id>[0-9]+)/modify/$', views.modify_resource, name='modify_resource'),
+    url(r'^resource/(?P<resource_id>[0-9]+)/delete/$', views.delete_resource, name='delete_resource'),
+
     url(r'^teacher_description/(?P<user_id>[0-9]+)/$', views.teacher_description, name='teacher_description'),
 
     url(r'^article/(?P<article_id>[0-9]+)/$', views.article_detail, name='article_detail'),
@@ -24,8 +34,9 @@ urlpatterns = [
     url(r'^notification/(?P<notification_id>[0-9]+)/modify/$', views.modify_notification, name='modify_notification'),
     url(r'^notification/(?P<notification_id>[0-9]+)/delete/$', views.delete_notification, name='delete_notification'),
 
+
     url(r'modify_teacher_description/$', views.modify_teacher_description, name='modify_teacher_description'),
-    url(r'modify_course_description/(?P<course_id>[0-9]+)/$', views.modify_course_description, name='modify_course_description'),
+
     url(r'^teacher/$', views.teacher_index, name='teacher_index'),
     url(r'^teacher/class/(?P<class_id>[0-9]+)/$', views.teacher_my_class, name='teacher_class'),
     url(r'^teacher/homework/(?P<homework_id>[0-9]+)/$', views.teacher_check_homework, name='teacher_check_homework'),

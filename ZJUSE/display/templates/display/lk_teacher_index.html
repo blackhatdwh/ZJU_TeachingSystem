@@ -92,7 +92,7 @@
                                     <ul>
                                         {% for class in class_set %}
                                         <li>
-                                            <a href="{% url 'course_description' class.course.id %}">{{ class.course.name }}</a>
+                                            <a href="{% url 'course_detail' class.course.id %}">{{ class.course.name }}</a>
                                             <a href="{% url 'teacher_class' class.id %}">{{ class.name }}</a>
                                         </li>
                                         {% endfor %}

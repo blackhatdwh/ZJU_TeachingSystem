@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+	<head>
+        <meta charset="utf-8" />
+		<title>修改资源</title>
+	</head>
+	<body>
+        <form action="{% url 'modify_resource' resource.id %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <table>
+            {{ form }}
+            </table>
+            <input type="submit" value="Submit" />
+        </form>
+        <a href="{% url 'delete_resource' resource.id %}">删除资源</a>
+	</body>
+</html>

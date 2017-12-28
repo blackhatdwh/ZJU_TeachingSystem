@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+	<head>
+        <meta charset="utf-8" />
+		<title>删除资源</title>
+	</head>
+	<body>
+        确认删除？
+        <form action="{% url 'delete_resource' resource.id %}" method="post">
+            {% csrf_token %}
+            <table>
+            {{ form }}
+            </table>
+            <input type="submit" value="确认" />
+        </form>
+	</body>
+</html>

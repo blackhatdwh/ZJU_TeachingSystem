@@ -7,7 +7,9 @@
 	<body>
         <h1>{{ homework.clazz.name }} {{ homework.title }}</h1>
         <p>{{ homework.content }}</p>
-        说明文件：{{ homework.attached_file }}
+        {% if homework.attached_file %}
+        <a href="{{ homework.attached_file.url }}">说明文件</a>
+        {% endif %}
         发布时间：{{ homework.pub_date }}
         截止时间：{{ homework.ddl }}
         状态：{{ homework.status }}

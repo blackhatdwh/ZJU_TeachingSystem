@@ -14,7 +14,7 @@
         <h2>Course</h2>
         <ul>
             {% for course in course_set %}
-            <li><a href="{% url 'course_description' course.id %}">{{ course.name }}</a></li>
+            <li><a href="{% url 'course_detail' course.id %}">{{ course.name }}</a></li>
             {% endfor %}
         </ul>
         <h2>Teacher</h2>

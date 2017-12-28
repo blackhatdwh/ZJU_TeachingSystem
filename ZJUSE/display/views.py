@@ -3,13 +3,14 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import check_password
+from django.contrib.auth.models import User, Group
 from django.utils import timezone
 from django.http import HttpResponse
 from .models import *
 from .forms import *
 
 from statistics import mean
-import datetime
+import datetime, os, csv
 from .utils import GenerateDate
 
 def homework_status(student, homework):
@@ -51,7 +52,6 @@ def change_password(request):
         form = ChangePass(request.POST)
         if form.is_valid():
             old_passwd = form.cleaned_data['old_passwd']
-            print(old_passwd)
             new_passwd_1 = form.cleaned_data['new_passwd_1']
             new_passwd_2 = form.cleaned_data['new_passwd_2']
             if check_password(old_passwd, request.user.password):
@@ -114,7 +114,6 @@ def change_password_using_question(request):
 #done
 def index(request):
     if request.user.is_authenticated() and request.user.profile.answer == '':
-        print("set password question")
         return redirect(reverse('set_password_question'))
     if request.user.is_authenticated() and request.user.groups.all().first().name == 'Teacher':
         return redirect(reverse('teacher_index'))
@@ -330,6 +329,14 @@ def teacher_check_detail(request, finish_id):
                 }
         return render(request, 'display/teacher_check_detail.html', context)
 
+def notification_detail(request, notification_id):
+    notification = Notification.objects.get(id=notification_id)
+    if request.user == notification.publisher.user:
+        authority = True
+    else:
+        authority = False
+    return render(request, 'display/notification_detail.html', {'notification': notification, 'authority': authority})
+
 def add_notification(request):
     if request.user.is_authenticated() and request.user.groups.all().first().name == 'Teacher':
         teacher = Teacher.objects.get(user=request.user)
@@ -412,7 +419,128 @@ def delete_notification(request, notification_id):
         }
         return render(request, 'display/delete_notification.html', context)
 
+def resource_detail(request, resource_id):
+    resource = Resource.objects.get(id=resource_id)
+    if request.user.is_authenticated():
+        access_authority = True
+    else:
+        access_authority = False
+    if resource.uploader.user == request.user:
+        modify_authority = True
+    else:
+        modify_authority = False
+    context = {
+            'access_authority': access_authority,
+            'modify_authority': modify_authority,
+            'resource': resource,
+            }
+    return render(request, 'display/resource_detail.html', context)
 
+
+
+@login_required
+def add_resource(request, course_id):
+    if request.user.groups.all().first().name == 'Teacher':
+        teacher = Teacher.objects.get(user=request.user)
+    else:
+        #you are not a teacher
+        return redirect(reverse('index'))
+    course = Course.objects.get(id=course_id)
+    if request.method == 'POST':
+        request.POST = request.POST.copy()
+        request.POST['pub_date'] = timezone.localtime()
+        form = ResourceForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+        else:
+            return HttpResponse('<script>alert("failed!");</script>')
+        return HttpResponse('Add succeeded!')
+    else:
+        initial = {
+                'course': course,
+                'pub_date': None,
+                'uploader': teacher,
+                }
+        form = ResourceForm(initial=initial)
+        context = {
+            'form': form,
+            'course': course,
+        }
+        return render(request, 'display/add_resource.html', context)
+
+
+@login_required
+def modify_resource(request, resource_id):
+    if request.user.groups.all().first().name == 'Teacher':
+        teacher = Teacher.objects.get(user=request.user)
+    else:
+        #you are not a teacher
+        return redirect(reverse('index'))
+    resource = Resource.objects.get(id=resource_id)
+    if request.method == 'POST':
+        request.POST = request.POST.copy()
+        request.POST['pub_date'] = timezone.localtime()
+        form = ResourceForm(request.POST, request.FILES, required=False)
+        if form.is_valid():
+            resource.course = form.cleaned_data['course']
+            resource.title = form.cleaned_data['title']
+            resource.description = form.cleaned_data['description']
+            try:
+                resource.attached_file = request.FILES['attached_file']
+            except:
+                pass
+            resource.pub_date = form.cleaned_data['pub_date']
+            resource.uploader = form.cleaned_data['uploader']
+            try:
+                resource.simple_file = request.FILES['simple_file']
+            except:
+                resource.simple_file = None
+            resource.save()
+        else:
+            return HttpResponse('<script>alert("failed!");</script>')
+        return HttpResponse('Add succeeded!')
+    else:
+        initial = {
+                'course': resource.course,
+                'title': resource.title,
+                'description': resource.description,
+                'attached_file': resource.attached_file,
+                'simple_file': resource.simple_file,
+                'pub_date': resource.pub_date,
+                'uploader': teacher,
+                }
+        form = ResourceForm(initial=initial)
+        context = {
+            'form': form,
+            'resource': resource,
+        }
+        return render(request, 'display/modify_resource.html', context)
+
+@login_required
+def delete_resource(request, resource_id):
+    if request.user.groups.all().first().name == 'Teacher':
+        teacher = Teacher.objects.get(user=request.user)
+    else:
+        #you are not a teacher
+        return redirect(reverse('index'))
+    resource = Resource.objects.get(id=resource_id)
+    if resource.uploader != teacher:
+        return redirect(reverse('index'))
+    if request.method == 'POST':
+        form = DeleteForm(request.POST)
+        if form.is_valid():
+            if form.cleaned_data['confirm'] == 'True':
+                resource.delete()
+        else:
+            return HttpResponse('<script>alert("failed!");</script>')
+        return HttpResponse('Add succeeded!')
+    else:
+        form = DeleteForm(initial={'confirm': 'True'})
+        context = {
+            'form': form,
+            'resource': resource,
+        }
+        return render(request, 'display/delete_resource.html', context)
 
 #partly done
 def student_index(request):
@@ -619,7 +747,7 @@ def modify_teacher_description(request):
         return render(request, 'display/modify_teacher_description.html', context)
 
 #done
-def course_description(request, course_id):
+def course_detail(request, course_id):
     course = Course.objects.get(id=course_id)
     if request.user.is_authenticated():
         resource_set = Resource.objects.filter(course=course)
@@ -633,28 +761,62 @@ def course_description(request, course_id):
         for teaches in teaches_set:
             teacher_set.add(teaches.teacher)
         teacher_and_class_list.append([teacher_set, clazz])
+
+    add_resource_authority = False
+    try:
+        if request.user.groups.all().first().name == 'Teacher':
+            add_resource_authority = True
+    except:
+        pass
+
     context = {
             'course': course,
             'resource_set': resource_set,
             'teacher_and_class_list': teacher_and_class_list,
+            'add_resource_authority': add_resource_authority,
             }
-    return render(request, 'display/course_description.html', context)
+    return render(request, 'display/course_detail.html', context)
 
 @login_required
-def modify_course_description(request, course_id):
+def modify_course(request, course_id):
+    if request.user.groups.all().first().name == 'Teacher':
+        teacher = Teacher.objects.get(user=request.user)
+    else:
+        #you are not a teacher
+        return redirect(reverse('index'))
     course = Course.objects.get(id=course_id)
-    class_set = Class.objects.filter(course=course)
-    teaches_set = Teaches.objects.filter(clazz__in=class_set)
-    teacher_set = set()
-    # all teachers who teaches this course
-    for teaches in teaches_set:
-        teacher_set.add(teaches.teacher)
-    # if the request user does not teaches this course, redirect
-    for teacher in teacher_set:
-        if request.user == teacher.user:
-            return HttpResponse("<script>alert('yes you can!')</script>")
-            break
-    return redirect(reverse('index'))
+
+    if request.method == 'POST':
+        form = CourseForm(request.POST)
+        if form.is_valid():
+            course.name = form.cleaned_data['name']
+            course.plan = form.cleaned_data['plan']
+            course.book = form.cleaned_data['book']
+            course.background = form.cleaned_data['background']
+            course.exam = form.cleaned_data['exam']
+            course.knowledge = form.cleaned_data['knowledge']
+            course.project = form.cleaned_data['project']
+            course.save()
+        else:
+            return HttpResponse('<script>alert("failed!");</script>')
+        return HttpResponse('Add succeeded!')
+    else:
+        initial = {
+                'name': course.name,
+                'plan': course.name,
+                'book': course.book,
+                'background': course.background,
+                'exam': course.exam,
+                'knowledge': course.knowledge,
+                'project': course.project,
+                }
+        form = CourseForm(initial=initial)
+        context = {
+            'form': form,
+            'course': course,
+        }
+        print(form)
+        return render(request, 'display/modify_course.html', context)
 
 #done
 def article_detail(request, article_id):
@@ -751,24 +913,80 @@ def delete_article(request, article_id):
         }
         return render(request, 'display/delete_article.html', context)
 
-
-#done
 def course_list(request):
     course_set = Course.objects.all()
     return render(request, 'display/course_list.html', {'course_set': course_set})
 
-#done
 def teacher_list(request):
     teacher_set = Teacher.objects.all()
     return render(request, 'display/teacher_list.html', {'teacher_set': teacher_set})
 
-#done
-def notification_detail(request, notification_id):
-    notification = Notification.objects.get(id=notification_id)
-    if request.user == notification.publisher.user:
-        authority = True
+
+def add_student_to_system(request):
+    if not request.user.is_superuser:
+        return redirect(reverse('index'))
+    if request.method == 'POST':
+        form = AddStudentToSystemForm(request.POST, request.FILES)
+        if form.is_valid():
+            namelist = request.FILES['namelist']
+            with open('namelist.csv', 'wb') as f:
+                for chunk in namelist.chunks():
+                    f.write(chunk)
+            with open('namelist.csv', 'r') as f:
+                reader = csv.reader(f, delimiter=',', quotechar='|')
+                for row in reader:
+                    name = row[0].strip()
+                    school_id = row[1].strip()
+                    user = User.objects.create_user(school_id, password='123456')
+                    user.save()
+                    Group.objects.get(name='Student').user_set.add(user)
+                    student = Student(user=user, name=name)
+                    student.save()
+            os.system('rm namelist.csv')
+
+        else:
+            return HttpResponse('<script>alert("failed!");</script>')
+        return HttpResponse('Add succeeded!')
     else:
-        authority = False
+        form = AddStudentToSystemForm()
+        context = {
+            'form': form,
+        }
+        return render(request, 'display/add_student_to_system.html', context)
 
-    return render(request, 'display/notification_detail.html', {'notification': notification, 'authority': authority})
+def add_student_to_class(request):
+    if not request.user.is_superuser:
+        return redirect(reverse('index'))
+    if request.method == 'POST':
+        form = AddStudentToClassForm(request.POST, request.FILES)
+        if form.is_valid():
+            namelist = request.FILES['namelist']
+            clazz = form.cleaned_data['clazz']
+            try:
+                homework_set = Homework.objects.filter(clazz=clazz)
+            except:
+                homework_set = set()
+            with open('namelist.csv', 'wb') as f:
+                for chunk in namelist.chunks():
+                    f.write(chunk)
+            with open('namelist.csv', 'r') as f:
+                reader = csv.reader(f, delimiter=',', quotechar='|')
+                for row in reader:
+                    school_id = row[0].strip()
+                    student = Student.objects.get(user__username=school_id)
+                    join = Join(student=student, clazz=clazz)
+                    join.save()
+                    for homework in homework_set:
+                        finish = Finish(student=student, homework=homework)
+                        finish.save()
+            os.system('rm namelist.csv')
 
+        else:
+            return HttpResponse('<script>alert("failed!");</script>')
+        return HttpResponse('Add succeeded!')
+    else:
+        form = AddStudentToClassForm()
+        context = {
+            'form': form,
+        }
+        return render(request, 'display/add_student_to_class.html', context)

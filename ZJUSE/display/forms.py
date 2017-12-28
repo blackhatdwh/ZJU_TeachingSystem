@@ -34,7 +34,7 @@ class TeacherForm(forms.ModelForm):
                 'publication': '出版作品', 'honor': '所获荣誉', 'contact': '联系方式', 'other': '备注',
                 }
 
-class CourseForm(forms.Form):
+class CourseForm(forms.ModelForm):
     class Meta:
         model = Course
         exclude = []
@@ -59,8 +59,34 @@ class ArticleForm(forms.ModelForm):
         labels = {
                 'title':'标题',
                 'content':'内容',
-                '附件':'附件',
+                'attached_file':'附件',
                 }
+
+class ResourceForm(forms.ModelForm):
+    class Meta:
+        model = Resource
+        exclude = []
+        widgets = {
+                'course': forms.HiddenInput(),
+                'pub_date': forms.HiddenInput(),
+                'uploader': forms.HiddenInput(),
+                }
+        labels = {
+                'title': '标题',
+                'description': '简介',
+                'attached_file': '文件',
+                'simple_file': '简化文件',
+                }
+    def __init__(self, *args, **kwargs):
+        required = True
+        try:
+            required = kwargs.pop('required')
+        except:
+            pass
+        super(ResourceForm, self).__init__(*args, **kwargs)
+        print(required)
+        if required == False:
+            self.fields['attached_file'].required = False
 
 class HomeworkForm(forms.ModelForm):
     course = forms.ModelChoiceField(label="课程", queryset=Course.objects.all())
@@ -74,7 +100,7 @@ class HomeworkForm(forms.ModelForm):
                 'ddl': forms.HiddenInput(),
                 }
         labels = {
-                'clazz': '课程',
+                'clazz': '班级',
                 'title': '标题',
                 'content': '内容',
                 'attached_file': '附件',
@@ -101,3 +127,9 @@ class TeacherCheckHomework(forms.ModelForm):
         model = Finish
         exclude = ['student', 'homework', 'upload_time', 'upload_file', 'checked']
 
+class AddStudentToSystemForm(forms.Form):
+    namelist = forms.FileField()
+
+class AddStudentToClassForm(forms.Form):
+    clazz = forms.ModelChoiceField(label="班级", queryset=Class.objects.all())
+    namelist = forms.FileField()

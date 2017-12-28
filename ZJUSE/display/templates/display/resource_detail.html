@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+	<head>
+        <meta charset="utf-8" />
+		<title>资源详情</title>
+	</head>
+	<body>
+        <h1>{{ resource.course.name }}</h1>
+        <h2>资源名称</h2>
+        <p>{{ resource.title }}</p>
+        <h2>简介</h2>
+        <p>{{ resource.description }}</p>
+        <h2>文件</h2>
+        {% if access_authority %}
+        <a href="{{ resource.attached_file.url }}">附件</a>
+        {% else %}
+        {% if resource.simple_file %}
+        <a href="{{ resource.simple_file.url }}">简化附件</a>
+        {% else %}
+        <p>抱歉，您没有权限！</p>
+        {% endif %}
+        {% endif %}
+        <h2>发布时间</h2>
+        <p>{{ resource.pub_date }}</p>
+        <h2>上传者</h2>
+        <p>{{ resource.uploader.name }}</p>
+        {% if modify_authority %}
+        <a href="{% url 'modify_resource' resource.id %}">修改资源</a>
+        {% endif %}
+	</body>
+</html>
