@@ -11,17 +11,8 @@ from .forms import *
 
 from statistics import mean
 import datetime, os, csv, json
-from .utils import GenerateDate, GenerateCourseAndClassDict
+from .utils import GenerateDate, GenerateCourseAndClassDict, homework_status
 
-def homework_status(student, homework):
-    homework.status = 'normal'
-    if Finish.objects.get(student=student, homework=homework).upload_time != None:
-        homework.status = 'done'
-    elif homework.ddl - timezone.localtime(timezone.now()) < datetime.timedelta(hours=12) and timezone.localtime(timezone.now()) < homework.ddl:
-        homework.status = 'emergency'
-    if timezone.localtime(timezone.now()) > homework.ddl:
-        homework.status = 'disabled'
-    return homework
 
 
 # Create your views here.
@@ -704,8 +695,8 @@ def guest_index(request):
         return redirect(reverse('index'))
 
 #done
-def teacher_description(request, user_id):
-    teacher = Teacher.objects.get(user__id=user_id)
+def teacher_description(request, teacher_id):
+    teacher = Teacher.objects.get(id=teacher_id)
     teaches_set = Teaches.objects.filter(teacher=teacher)
     class_set = set()
     article_set = Article.objects.filter(teacher=teacher)
@@ -917,14 +908,179 @@ def delete_article(request, article_id):
         }
         return render(request, 'display/delete_article.html', context)
 
-def course_list(request):
+@login_required
+def teacher_course_list(request):
+    if request.user.is_authenticated() and request.user.groups.all().first().name == 'Teacher':
+        teacher = Teacher.objects.get(user=request.user)
+        course_set = Course.objects.all()
+        context = {
+                'teacher': teacher,
+                'course_set': course_set, 
+                }
+        return render(request, 'display/teacher_course_list.html', context)
+    else:
+        return redirect(reverse('index'))
+
+@login_required
+def student_course_list(request):
+    if request.user.is_authenticated() and request.user.groups.all().first().name == 'Student':
+        student = Student.objects.get(user=request.user)
+        course_set = Course.objects.all()
+        context = {
+                'student': student,
+                'course_set': course_set, 
+                }
+        return render(request, 'display/student_course_list.html', context)
+    else:
+        return redirect(reverse('index'))
+
+def guest_course_list(request):
     course_set = Course.objects.all()
-    return render(request, 'display/course_list.html', {'course_set': course_set})
+    context = {
+            'course_set': course_set, 
+            }
+    return render(request, 'display/guest_course_list.html', context)
 
-def teacher_list(request):
+@login_required
+def teacher_teacher_list(request):
+    if request.user.is_authenticated() and request.user.groups.all().first().name == 'Teacher':
+        teacher = Teacher.objects.get(user=request.user)
+        teacher_set = Teacher.objects.all()
+        context = {
+                'teacher': teacher,
+                'teacher_set': teacher_set, 
+                }
+        return render(request, 'display/teacher_teacher_list.html', context)
+    else:
+        return redirect(reverse('index'))
+
+@login_required
+def student_teacher_list(request):
+    if request.user.is_authenticated() and request.user.groups.all().first().name == 'Student':
+        student = Student.objects.get(user=request.user)
+        teacher_set = Teacher.objects.all()
+        context = {
+                'student': student,
+                'teacher_set': teacher_set, 
+                }
+        return render(request, 'display/student_teacher_list.html', context)
+    else:
+        return redirect(reverse('index'))
+
+def guest_teacher_list(request):
     teacher_set = Teacher.objects.all()
-    return render(request, 'display/teacher_list.html', {'teacher_set': teacher_set})
+    context = {
+            'teacher_set': teacher_set, 
+            }
+    return render(request, 'display/guest_teacher_list.html', context)
 
+@login_required
+def teacher_notification_list(request):
+    if request.user.groups.all().first().name == 'Teacher':
+        teacher = Teacher.objects.get(user=request.user)
+        notification_set = Notification.objects.filter(publisher=teacher).order_by('-pub_date')
+        context = {
+                'notification_set': notification_set, 
+                'teacher': teacher,
+        }
+        return render(request, 'display/teacher_notification_list.html', context)
+    else:
+        return redirect(reverse('index'))
+
+@login_required
+def student_notification_list(request):
+    if request.user.groups.all().first().name == 'Student':
+        student = Student.objects.get(user=request.user)
+        join_set = Join.objects.filter(student=student)
+        class_set = set()
+        for join in join_set:
+            class_set.add(join.clazz)
+        notification_set = Notification.objects.filter(clazz__in=class_set)
+    context = {
+            'notification_set': notification_set, 
+            'student': student,
+    }
+    return render(request, 'display/student_notification_list.html', context)
+
+@login_required
+def teacher_homework_list(request):
+    if request.user.groups.all().first().name == 'Teacher':
+        teacher = Teacher.objects.get(user=request.user)
+        teaches_set = Teaches.objects.filter(teacher=teacher)
+        class_set = set()
+        for teaches in teaches_set:
+            class_set.add(teaches.clazz)
+        homework_set = Homework.objects.filter(clazz__in=class_set).order_by('-pub_date')
+        for homework in homework_set:
+            unchecked_set = Finish.objects.filter(homework=homework, checked=False)
+            checked_set = Finish.objects.filter(homework=homework, checked=True)
+            if timezone.localtime(timezone.now()) < homework.ddl:
+                homework.check_status = '尚未截止'
+            elif len(unchecked_set) == 0:
+                homework.check_status = '批改完成'
+            elif len(checked_set) == 0:
+                homework.check_status = '未批改'
+            else:
+                homework.check_status = '未批改完成'
+        user = teacher
+        is_teacher = True
+        context = {
+                'homework_set': homework_set, 
+                'teacher': teacher,
+                }
+        return render(request, 'display/teacher_homework_list.html', context)
+
+@login_required
+def student_homework_list(request):
+    if request.user.groups.all().first().name == 'Student':
+        student = Student.objects.get(user=request.user)
+        join_set = Join.objects.filter(student=student)
+        class_set = set()
+        for join in join_set:
+            class_set.add(join.clazz)
+        homework_set = Homework.objects.filter(clazz__in=class_set).order_by('-pub_date')
+        for h in homework_set:
+            h = homework_status(student, h)
+        context = {
+                'homework_set': homework_set, 
+                'student': student,
+                }
+        return render(request, 'display/student_homework_list.html', context)
+    else:
+        return redirect(reverse('index'))
+
+@login_required
+def teacher_article_list(request):
+    if request.user.groups.all().first().name == 'Teacher':
+        article_set = Article.objects.all()
+        teacher = Teacher.objects.get(user=request.user)
+        context = {
+                'article_set': article_set,
+                'teacher': teacher,
+                }
+        return render(request, 'display/teacher_article_list.html', context)
+    else:
+        return redirect(reverse('index'))
+
+@login_required
+def student_article_list(request):
+    if request.user.groups.all().first().name == 'Teacher':
+        article_set = Article.objects.all()
+        student = Student.objects.get(user=request.user)
+        context = {
+                'article_set': article_set,
+                'student': student,
+                }
+        return render(request, 'display/student_article_list.html', context)
+    else:
+        return redirect(reverse('index'))
+
+def guest_article_list(request):
+    article_set = Article.objects.all()
+    context = {
+            'article_set': article_set,
+            }
+    return render(request, 'display/guest_article_list.html', context)
 
 def add_student_to_system(request):
     if not request.user.is_superuser:

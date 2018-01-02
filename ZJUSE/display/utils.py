@@ -63,3 +63,14 @@ def GenerateCourseAndClassDict(teacher):
     for key in course_and_class_dict:
         course_and_class_dict[key] = list(course_and_class_dict[key])
     return course_and_class_dict
+
+def homework_status(student, homework):
+    homework.status = 'normal'
+    if Finish.objects.get(student=student, homework=homework).upload_time != None:
+        homework.status = 'done'
+    elif homework.ddl - timezone.localtime(timezone.now()) < datetime.timedelta(hours=12) and timezone.localtime(timezone.now()) < homework.ddl:
+        homework.status = 'emergency'
+    if timezone.localtime(timezone.now()) > homework.ddl:
+        homework.status = 'disabled'
+    return homework
+

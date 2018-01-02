@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+	<head>
+        <meta charset="utf-8" />
+		<title>通知列表</title>
+	</head>
+	<body>
+        <h1>通知列表</h1>
+        <ul>
+            {% for notification in notification_set %}
+            <li><a href="{% url 'notification_detail' notification.id %}">{{ notification.title }}</a></li>
+            {% endfor %}
+        </ul>
+	</body>
+</html>

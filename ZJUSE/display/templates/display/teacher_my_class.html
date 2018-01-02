@@ -29,7 +29,7 @@
         <ul>
         {% for resource in resource_set %}
         <li>
-            <a href="">{{ resource.title }}</a>
+            <a href="{% url 'resource_detail' resource.id %}">{{ resource.title }}</a>
         </li>
         {% endfor %}
         </ul>

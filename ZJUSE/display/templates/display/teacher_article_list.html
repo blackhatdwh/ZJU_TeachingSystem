@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -6,7 +7,7 @@
     <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.ico' %}">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
 
-	<title>浙江大学软件工程教学辅助系统</title>
+	<title>文章列表</title>
 
 	<meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport' />
     <meta name="viewport" content="width=device-width" />
@@ -52,7 +53,7 @@
             </div>
 
             <ul class="nav">
-                <li class="active">
+                <li>
                     <a href="{% url 'index' %}">
                         <i class="pe-7s-display2"></i>
                         <p>主页</p>
@@ -82,7 +83,7 @@
                         <p>教师列表</p>
                     </a>
                 </li>
-                <li>
+                <li class="active">
                     <a href="{% url 'teacher_article_list' %}">
                         <i class="pe-7s-news-paper"></i>
                         <p>文章列表</p>
@@ -130,10 +131,6 @@
                               <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                                     <i class="fa fa-globe"></i>
                                     <b class="caret hidden-lg hidden-md"></b>
-									<p class="hidden-lg hidden-md">
-										5 Notifications
-										<b class="caret"></b>
-									</p>
                               </a>
                               <ul class="dropdown-menu">
                                 <li><a href="#">中文</a></li>
@@ -153,6 +150,7 @@
                             <a href="{% url 'modify_teacher_description' %}">
                                <p>{{ teacher.name }}</p>
                             </a>
+
                         </li>
                         <li>
                             <a href="{% url 'logout' %}">
@@ -169,117 +167,25 @@
         <div class="content">
             <div class="container-fluid">
                 <div class="row">
-                    <div class="col-md-7">
+                    <div class="col-md-12">
                         <div class="card">
 
                             <div class="header">
-                                <h4 class="title pull-left">我发布的通知</h4>
-                                <a href="{% url 'add_notification' %}"><i class="pull-right fa fa-plus-circle fa-2x"></i></a>
-                            </div>
-                            <div class="content">
-                                <div class="content table-responsive table-full-width">
-                                    <table class="table table-hover table-striped">
-                                        <thead>
-                                            <th>班级</th>
-                                            <th>标题</th>
-                                            <th>发布时间</th>
-                                        </thead>
-                                        <tbody>
-                                        {% for notification in notification_set %}
-                                            <tr>
-                                                <td>{{ notification.clazz.name }}</td>
-                                                <td><a href="{% url 'notification_detail' notification.id %}">{{ notification.title }}</a></td>
-                                                <td>{{ notification.pub_date }}</td>
-                                            </tr>
-                                        {% endfor %}
-                                        </tbody>
-                                    </table>
-
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-5">
-                        <div class="card">
-                            <div class="header">
-                                <h4 class="title">我的课程</h4>
-                            </div>
-                            <div class="content">
-                                <div class="content table-responsive table-full-width">
-                                    <table class="table table-hover table-striped">
-                                        <thead>
-                                            <th>课程</th>
-                                            <th>班级</th>
-                                        </thead>
-                                        <tbody>
-                                        {% for class in class_set %}
-                                            <tr>
-                                                <td><a href="{% url 'course_detail' class.course.id %}">{{ class.course.name }}</a></td>
-                                                <td><a href="{% url 'teacher_class' class.id %}">{{ class.name }}</a></td>
-                                            </tr>
-                                        {% endfor %}
-                                        </tbody>
-                                    </table>
-
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="card ">
-                            <div class="header">
-                                <h4 class="title pull-left">本班作业</h4>
-                                <a href="{% url 'add_homework' %}"><i class="pull-right fa fa-plus-circle fa-2x"></i></a>
-                            </div>
-                            <div class="content">
-                                <div class="content table-responsive table-full-width">
-                                    <table class="table table-hover table-striped">
-                                        <thead>
-                                            <th>班级</th>
-                                            <th>标题</th>
-                                            <th>截止日期</th>
-                                            <th>批改进度</th>
-                                        </thead>
-                                        <tbody>
-                                            {% for homework in homework_set %}
-                                            <tr>
-                                                <td><a href="{% url 'teacher_class' homework.clazz.id %}">{{ homework.clazz.name }}</a></td>
-                                                <td><a href="{% url 'teacher_check_homework' homework.id %}">{{ homework.title }}</a></td>
-                                                <td>{{ homework.ddl }}</td>
-                                                <td>{{ homework.check_status }}</td>
-                                            </tr>
-                                        {% endfor %}
-                                        </tbody>
-                                    </table>
-
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="card ">
-                            <div class="header">
-                                <h4 class="title pull-left">我的文章</h4>
-                                <a href="{% url 'add_article' %}"><i class="pull-right fa fa-plus-circle fa-2x"></i></a>
+                                <h4 class="title">文章列表</h4>
                             </div>
                             <div class="content">
                                 <div class="content table-responsive table-full-width">
                                     <table class="table table-hover table-striped">
                                         <thead>
                                             <th>文章标题</th>
+                                            <th>作者</th>
                                             <th>发布时间</th>
                                         </thead>
                                         <tbody>
-                                            {% for article in article_set %}
+                                        {% for article in article_set %}
                                             <tr>
                                                 <td><a href="{% url 'article_detail' article.id %}">{{ article.title }}</a></td>
+                                                <td><a href="{% url 'teacher_description' article.teacher.id %}">{{ article.teacher.name }}</a></td>
                                                 <td>{{ article.pub_date }}</td>
                                             </tr>
                                         {% endfor %}
@@ -287,10 +193,10 @@
                                     </table>
 
                                 </div>
-
                             </div>
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>
@@ -329,16 +235,6 @@
 	<script type="text/javascript">
     	$(document).ready(function(){
 
-        	demo.initChartist();
-
-        	$.notify({
-            	icon: 'pe-7s-gift',
-                message: "欢迎回来，{{ teacher.name }}老师"
-
-            },{
-                type: 'info',
-                timer: 200
-            });
 
     	});
 	</script>

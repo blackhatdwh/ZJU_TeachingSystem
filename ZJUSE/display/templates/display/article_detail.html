@@ -6,7 +6,7 @@
 	</head>
 	<body>
         <h1>{{ article.title }}</h1>
-        <p><a href="{% url 'teacher_description' article.teacher.user.id %}">{{ article.teacher.name }}</a></p>
+        <p><a href="{% url 'teacher_description' article.teacher.id %}">{{ article.teacher.name }}</a></p>
         <p>{{ article.pub_date }}</p>
         <p>{{ article.content }}</p>
         {% if article.attached_file %}

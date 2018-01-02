@@ -31,7 +31,7 @@
         <ul>
             {% for tac in teacher_and_class_list %}
             <li>{% for teacher in tac.0 %} 
-                <a href="{% url 'teacher_description' teacher.user.id %}">{{ teacher.name }}</a>
+                <a href="{% url 'teacher_description' teacher.id %}">{{ teacher.name }}</a>
                 {% endfor %}
                 {{ tac.1.name }}
                 {{ tac.1.time }}

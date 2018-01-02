@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Index</title>
+    </head>
+    <body>
+        <h2>本班作业</h2>
+        <ul>
+            {% for homework in homework_set %}
+            <li>
+                <a href="{% url 'teacher_class' homework.clazz.id %}">{{ homework.clazz.name }}</a>
+                <a href="{% url 'teacher_check_homework' homework.id %}">{{ homework.title }}</a>
+                {{ homework.ddl }}
+                {% if homework.check_status %}
+                {{ homework.check_status }}
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+    </body>
+</html>
