@@ -90,6 +90,12 @@
                     </a>
                 </li>
                 <li>
+                    <a href="/forum/">
+                        <i class="pe-7s-chat"></i>
+                        <p>教学论坛</p>
+                    </a>
+                </li>
+                <li>
                     <a href="{% url 'change_password' %}">
                         <i class="pe-7s-tools"></i>
                         <p>账户设置</p>
@@ -147,7 +153,7 @@
 
                     <ul class="nav navbar-nav navbar-right">
                         <li>
-                            <a href="{% url 'modify_teacher_description' %}">
+                            <a href="{% url 'modify_teacher_description' %}" target="_blank">
                                <p>{{ teacher.name }}</p>
                             </a>
 
@@ -182,7 +188,7 @@
                                         <tbody>
                                         {% for teacher in teacher_set %}
                                             <tr>
-                                                <td><a href="{% url 'teacher_description' teacher.id %}">{{ teacher.name }}</a></td>
+                                                <td><a href="{% url 'teacher_description' teacher.id %}" target="_blank">{{ teacher.name }}</a></td>
                                             </tr>
                                         {% endfor %}
                                         </tbody>

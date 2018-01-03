@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+	<head>
+        <meta charset="utf-8" />
+		<title>文章详情</title>
+	</head>
+	<body>
+        <h1>{{ article.title }}</h1>
+        <p><a href="{% url 'teacher_description' article.teacher.id %}">{{ article.teacher.name }}</a></p>
+        <p>{{ article.pub_date }}</p>
+        <p>{{ article.content }}</p>
+        {% if article.attached_file %}
+        <a href="{{ article.attached_file.url }}">附件</a>
+        {% endif %}
+        {% if authority %}
+        <a href="{% url 'modify_article' article.id %}">修改文章</a>
+        {% endif %}
+	</body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+	<head>
+        <meta charset="utf-8" />
+		<title>课程介绍</title>
+	</head>
+	<body>
+        <h1>{{ course.name }}</h1>
+        <h2>教学计划</h2>
+        <p>{{ course.plan }}</p>
+        <h2>使用教材</h2>
+        <p>{{ course.book }}</p>
+        <h2>国际国内背景</h2>
+        <p>{{ course.background }}</p>
+        <h2>考核方式</h2>
+        <p>{{ course.exam }}</p>
+        <h2>知识背景</h2>
+        <p>{{ course.knowledge }}</p>
+        <h2>大作业介绍</h2>
+        <p>{{ course.project }}</p>
+        <h2>课程资源</h2>
+        <ul>
+            {% for resource in resource_set %}
+            <li><a href="{% url 'resource_detail' resource.id %}">{{ resource.title }}</a></li>
+            {% endfor %}
+        </ul>
+        {% if add_resource_authority %}
+        <a href="{% url 'add_resource' course.id %}">添加资源</a>
+        {% endif %}
+        <h2>开设班级</h2>
+        <ul>
+            {% for tac in teacher_and_class_list %}
+            <li>{% for teacher in tac.0 %} 
+                <a href="{% url 'teacher_description' teacher.id %}">{{ teacher.name }}</a>
+                {% endfor %}
+                {{ tac.1.name }}
+                {{ tac.1.time }}
+            </li>
+            {% endfor %}
+        </ul>
+	</body>
+</html>

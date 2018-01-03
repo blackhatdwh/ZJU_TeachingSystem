@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+	<head>
+        <meta charset="utf-8" />
+		<title>我的班级</title>
+	</head>
+	<body>
+        <h1><a href="{% url 'course_detail' class.course.id %}">{{ class.course.name }}</a>{{ class.name }}</h1>
+        <h2>课程资源</h2>
+        <ul>
+        {% for resource in resource_set %}
+        <li>
+            <a href="">{{ resource.title }}</a>
+        </li>
+        {% endfor %}
+        </ul>
+
+	</body>
+</html>

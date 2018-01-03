@@ -117,12 +117,12 @@ def index(request):
 def teacher_index(request):
     if request.user.is_authenticated() and request.user.groups.all().first().name == 'Teacher':
         teacher = Teacher.objects.get(user=request.user)
-        notification_set = Notification.objects.filter(publisher=teacher)
+        notification_set = Notification.objects.filter(publisher=teacher).order_by('-pub_date')
         teaches_set = Teaches.objects.filter(teacher=teacher)
         class_set = set()
         for teaches in teaches_set:
             class_set.add(teaches.clazz)
-        homework_set = Homework.objects.filter(clazz__in=class_set)
+        homework_set = Homework.objects.filter(clazz__in=class_set).order_by('-pub_date')
         for homework in homework_set:
             unchecked_set = Finish.objects.filter(homework=homework, checked=False)
             checked_set = Finish.objects.filter(homework=homework, checked=True)
@@ -134,7 +134,7 @@ def teacher_index(request):
                 homework.check_status = '未批改'
             else:
                 homework.check_status = '未批改完成'
-        article_set = Article.objects.filter(teacher=teacher)
+        article_set = Article.objects.filter(teacher=teacher).order_by('-pub_date')
 
         context = {
             'teacher': teacher,
@@ -151,6 +151,7 @@ def teacher_index(request):
 #done
 def teacher_my_class(request, class_id):
     if request.user.is_authenticated() and request.user.groups.all().first().name == 'Teacher':
+        teacher = Teacher.objects.get(user=request.user)
         clazz = Class.objects.get(id=class_id)
         course = clazz.course
         notification_set = Notification.objects.filter(clazz=clazz)
@@ -161,6 +162,7 @@ def teacher_my_class(request, class_id):
                 'notification_set': notification_set,
                 'homework_set': homework_set,
                 'resource_set': resource_set,
+                'teacher': teacher,
                 }
         return render(request, 'display/teacher_my_class.html', context)
     else:
@@ -277,6 +279,7 @@ def delete_homework(request, homework_id):
 #done
 def teacher_check_homework(request, homework_id):
     if request.user.is_authenticated() and request.user.groups.all().first().name == 'Teacher':
+        teacher = Teacher.objects.get(user=request.user)
         homework = Homework.objects.get(id=homework_id)
         finished_set = Finish.objects.filter(homework=homework).exclude(upload_time__isnull=True)
         unfinished_set = Finish.objects.filter(homework=homework, upload_time__isnull=True)
@@ -284,6 +287,7 @@ def teacher_check_homework(request, homework_id):
                 'homework': homework,
                 'finished_set': finished_set,
                 'unfinished_set': unfinished_set,
+                'teacher': teacher,
                 }
         return render(request, 'display/teacher_check_homework.html', context)
     else:
@@ -310,6 +314,7 @@ def teacher_check_detail(request, finish_id):
             return HttpResponse('<script>alert("failed!");</script>')
         return HttpResponse('Add succeeded!')
     else:
+        teacher = Teacher.objects.get(user=request.user)
         initial = {
                 'score': finish.score,
                 'evaluation': finish.evaluation,
@@ -319,6 +324,7 @@ def teacher_check_detail(request, finish_id):
                 'student': finish.student,
                 'finish': finish,
                 'form': form,
+                'teacher': teacher,
                 }
         return render(request, 'display/teacher_check_detail.html', context)
 
@@ -381,10 +387,12 @@ def modify_notification(request, notification_id):
                 'content': notification.content,
                 }
         form = NotificationForm(initial=initial)
+        course_and_class_dict = GenerateCourseAndClassDict(teacher)
         context = {
             'form': form,
             'teacher': teacher,
             'notification': notification,
+            'course_and_class_dict': json.dumps(course_and_class_dict),
         }
         return render(request, 'display/modify_notification.html', context)
 
@@ -545,11 +553,11 @@ def student_index(request):
         class_set = set()
         for join in join_set:
             class_set.add(join.clazz)
-        notification_set = Notification.objects.filter(clazz__in=class_set)
-        homework_set = Homework.objects.filter(clazz__in=class_set)
+        notification_set = Notification.objects.filter(clazz__in=class_set).order_by('-pub_date')
+        homework_set = Homework.objects.filter(clazz__in=class_set).order_by('-pub_date')
         for h in homework_set:
             h = homework_status(student, h)
-        article_set = Article.objects.all()
+        article_set = Article.objects.all().order_by('-pub_date')
         context = {
             'student': student,
             'notification_set': notification_set,
@@ -572,7 +580,7 @@ def student_my_class(request, class_id):
         for join in join_set:
             this_students_class_set.add(join.clazz)
         if requested_clazz in this_students_class_set:
-            notification_set = Notification.objects.filter(clazz=requested_clazz)
+            notification_set = Notification.objects.filter(clazz=requested_clazz).order_by('-pub_date')
             homework_set = Homework.objects.filter(clazz=requested_clazz)
             for h in homework_set:
                 h = homework_status(student, h)
@@ -581,13 +589,14 @@ def student_my_class(request, class_id):
             for f in finish_set:
                 homework_average_score += f.score * f.homework.weight
             homework_average_score /= len(finish_set)
-            resource_set = Resource.objects.filter(course=course)
+            resource_set = Resource.objects.filter(course=course).order_by('-pub_date')
             context = {
                     'class': requested_clazz,
                     'notification_set': notification_set,
                     'homework_set': homework_set,
                     'homework_average_score': homework_average_score,
                     'resource_set': resource_set,
+                    'student': student,
                     }
             return render(request, 'display/student_my_class.html', context)
         else:
@@ -602,10 +611,12 @@ def student_others_class(request, class_id):
     if request.user.is_authenticated() and request.user.groups.all().first().name == 'Student':
         student = Student.objects.get(user=request.user)
         clazz = Class.objects.get(id=class_id)
-        resource_set = Resource.objects.filter(course=clazz__course)
+        course = clazz.course
+        resource_set = Resource.objects.filter(course=course)
         context = {
                 'class': clazz,
                 'resource_set': resource_set,
+                'student': student,
                 }
         return render(request, 'display/student_others_class.html', context)
     else:
@@ -652,6 +663,7 @@ def student_view_homework(request, homework_id):
                     'rank': rank,
                     'total': len(score_list),
                     'form': form,
+                    'student': student,
                     }
             return render(request, 'display/student_view_homework.html', context)
     else:
@@ -866,7 +878,7 @@ def modify_article(request, article_id):
             try:
                 article.attached_file = request.FILES['attached_file']
             except:
-                article.attached_file = None
+                pass
             article.save()
         else:
             return HttpResponse('<script>alert("failed!");</script>')
@@ -936,8 +948,10 @@ def student_course_list(request):
 
 def guest_course_list(request):
     course_set = Course.objects.all()
+    form = NamePass()
     context = {
             'course_set': course_set, 
+            'form': form,
             }
     return render(request, 'display/guest_course_list.html', context)
 
@@ -969,8 +983,10 @@ def student_teacher_list(request):
 
 def guest_teacher_list(request):
     teacher_set = Teacher.objects.all()
+    form = NamePass()
     context = {
             'teacher_set': teacher_set, 
+            'form': form,
             }
     return render(request, 'display/guest_teacher_list.html', context)
 
@@ -995,7 +1011,7 @@ def student_notification_list(request):
         class_set = set()
         for join in join_set:
             class_set.add(join.clazz)
-        notification_set = Notification.objects.filter(clazz__in=class_set)
+        notification_set = Notification.objects.filter(clazz__in=class_set).order_by('-pub_date')
     context = {
             'notification_set': notification_set, 
             'student': student,
@@ -1064,8 +1080,8 @@ def teacher_article_list(request):
 
 @login_required
 def student_article_list(request):
-    if request.user.groups.all().first().name == 'Teacher':
-        article_set = Article.objects.all()
+    if request.user.groups.all().first().name == 'Student':
+        article_set = Article.objects.all().order_by('-pub_date')
         student = Student.objects.get(user=request.user)
         context = {
                 'article_set': article_set,
@@ -1077,8 +1093,10 @@ def student_article_list(request):
 
 def guest_article_list(request):
     article_set = Article.objects.all()
+    form = NamePass()
     context = {
             'article_set': article_set,
+            'form': form,
             }
     return render(request, 'display/guest_article_list.html', context)
 

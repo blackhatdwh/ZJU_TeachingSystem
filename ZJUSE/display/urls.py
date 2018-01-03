@@ -54,7 +54,7 @@ urlpatterns = [
 
     url(r'^teacher/course_list/$', views.teacher_course_list, name='teacher_course_list'),
     url(r'^student/course_list/$', views.student_course_list, name='student_course_list'),
-    url(r'^guest/course_list/$', views.student_course_list, name='guest_course_list'),
+    url(r'^guest/course_list/$', views.guest_course_list, name='guest_course_list'),
 
     url(r'^teacher/teacher_list/$', views.teacher_teacher_list, name='teacher_teacher_list'),
     url(r'^student/teacher_list/$', views.student_teacher_list, name='student_teacher_list'),

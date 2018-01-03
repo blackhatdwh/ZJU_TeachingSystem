@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+	<head>
+        <meta charset="utf-8" />
+		<title>修改作业</title>
+	</head>
+	<body>
+        <form action="{% url 'modify_homework' homework.id %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <table>
+            {{ form }}
+            </table>
+            <input type="submit" value="Submit" />
+        </form>
+        <a href="{% url 'delete_homework' homework.id %}">删除作业</a>
+	</body>
+</html>

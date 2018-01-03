@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+	<head>
+        <meta charset="utf-8" />
+		<title>通知详情</title>
+	</head>
+	<body>
+        <h1>{{ notification.title }}</h1>
+        <p>{{ notification.content }}</p>
+        <p>{{ notification.pub_date }}</p>
+        <p><a href="{% url 'teacher_description' notification.publisher.id %}">{{ notification.publisher.name }}</a></p>
+        {% if authority %}
+        <a href="{% url 'modify_notification' notification.id %}">修改通知</a>
+        {% endif %}
+	</body>
+</html>

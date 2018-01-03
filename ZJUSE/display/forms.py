@@ -33,6 +33,16 @@ class TeacherForm(forms.ModelForm):
                 'name': '姓名', 'experience': '教学经验', 'research': '研究成果', 'style': '教学风格',
                 'publication': '出版作品', 'honor': '所获荣誉', 'contact': '联系方式', 'other': '备注',
                 }
+        widgets = {
+                'name': forms.TextInput(attrs={'class': 'form-control'}),
+                'experience': forms.Textarea(attrs={'class': 'form-control'}),
+                'research': forms.Textarea(attrs={'class': 'form-control'}),
+                'style': forms.Textarea(attrs={'class': 'form-control'}),
+                'publication': forms.Textarea(attrs={'class': 'form-control'}),
+                'honor': forms.Textarea(attrs={'class': 'form-control'}),
+                'contact': forms.Textarea(attrs={'class': 'form-control'}),
+                'other': forms.Textarea(attrs={'class': 'form-control'}),
+                }
 
 class CourseForm(forms.ModelForm):
     class Meta:
@@ -42,12 +52,21 @@ class CourseForm(forms.ModelForm):
                 'name': '课程名称', 'plan': '教学计划', 'book': '教材', 'background': '国际国内背景',
                 'exam': '考核方式', 'knowledge': '前置知识', 'project': '大作业',
                 }
+        widgets = {
+                'name': forms.TextInput(attrs={'class': 'form-control'}),
+                'plan': forms.Textarea(attrs={'class': 'form-control'}),
+                'book': forms.Textarea(attrs={'class': 'form-control'}),
+                'background': forms.Textarea(attrs={'class': 'form-control'}),
+                'exam': forms.Textarea(attrs={'class': 'form-control'}),
+                'knowledge': forms.Textarea(attrs={'class': 'form-control'}),
+                'project': forms.Textarea(attrs={'class': 'form-control'}),
+                }
 
 class NotificationForm(forms.Form):
     course = forms.ModelChoiceField(label="课程", queryset=Course.objects.all(), required=False)
     clazz = forms.ModelChoiceField(label="班级", queryset=Class.objects.all())
-    title = forms.CharField(label="标题", max_length=50)
-    content = forms.CharField(label="内容", widget=forms.Textarea)
+    title = forms.CharField(label="标题", max_length=50, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    content = forms.CharField(label="内容", widget=forms.Textarea(attrs={'class': 'form-control'}))
 
 class ArticleForm(forms.ModelForm):
     class Meta:
@@ -55,6 +74,8 @@ class ArticleForm(forms.ModelForm):
         fields = ['teacher', 'title', 'content', 'attached_file', 'pub_date']
         widgets = {'teacher': forms.HiddenInput(),
                 'pub_date': forms.HiddenInput(),
+                'title': forms.TextInput(attrs={'class': 'form-control'}),
+                'content': forms.Textarea(attrs={'class': 'form-control'}),
                 }
         labels = {
                 'title':'标题',
@@ -70,6 +91,8 @@ class ResourceForm(forms.ModelForm):
                 'course': forms.HiddenInput(),
                 'pub_date': forms.HiddenInput(),
                 'uploader': forms.HiddenInput(),
+                'title': forms.TextInput(attrs={'class': 'form-control'}),
+                'description': forms.TextInput(attrs={'class': 'form-control'}),
                 }
         labels = {
                 'title': '标题',
@@ -98,6 +121,9 @@ class HomeworkForm(forms.ModelForm):
         widgets = {
                 'pub_date': forms.HiddenInput(),
                 'ddl': forms.HiddenInput(),
+                'title': forms.TextInput(attrs={'class': 'form-control'}),
+                'content': forms.Textarea(attrs={'class': 'form-control'}),
+                'weight': forms.TextInput(attrs={'class': 'form-control'}),
                 }
         labels = {
                 'clazz': '班级',
