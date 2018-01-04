@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'display',
+    'discuss',
     'mptt',
     'haystack',
     'widget_tweaks',
@@ -93,7 +94,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql', 
         'NAME': 'ZJUSE',
         'USER': 'root',
-        'PASSWORD': 'wohenhaoqi',
+        'PASSWORD': '1997lk421',
         'HOST': 'localhost',   # Or an IP Address that your DB is hosted on
         'PORT': '3306',
     }
