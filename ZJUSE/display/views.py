@@ -17,6 +17,7 @@ from .utils import GenerateDate, GenerateCourseAndClassDict, homework_status
 
 # Create your views here.
 
+
 def log_in(request):
     # post
     if request.method == 'POST':
@@ -29,7 +30,7 @@ def log_in(request):
                 login(request, user)
                 return redirect(reverse('index'))
             else:
-                return HttpResponse(r"<script>alert('failed!');</script>")
+                return redirect(reverse('guest_index')+'?fail')
     return redirect(reverse('index'))
 
 #done
@@ -136,12 +137,15 @@ def teacher_index(request):
                 homework.check_status = '未批改完成'
         article_set = Article.objects.filter(teacher=teacher).order_by('-pub_date')
 
+        message = request.get_full_path().split('?')[-1]
+
         context = {
             'teacher': teacher,
             'notification_set': notification_set,
             'class_set': class_set,
             'homework_set': homework_set,
             'article_set': article_set,
+            'message': message,
         }
         return render(request, 'display/teacher_index.html', context)
     else:
@@ -184,14 +188,16 @@ def add_homework(request):
         if form.is_valid():
             form.save()
         else:
-            return HttpResponse('<script>alert("failed!");</script>')
+            return redirect(reverse('teacher_index')+'?fail')
+            #return HttpResponse('<script>alert("failed!");</script>')
         newly_added_homework = Homework.objects.order_by('-id').first()
         clazz = newly_added_homework.clazz
         join_set = Join.objects.filter(clazz=clazz)
         for join in join_set:
             finish = Finish(student=join.student, homework=newly_added_homework)
             finish.save()
-        return HttpResponse('Add succeeded!')
+        #return HttpResponse('Add succeeded!')
+        return redirect(reverse('teacher_index')+'?success')
     else:
         initial = {
                 'pub_date': None,
@@ -200,6 +206,7 @@ def add_homework(request):
         form = HomeworkForm(initial=initial)
         course_and_class_dict = GenerateCourseAndClassDict(teacher)
         context = {
+            'teacher': teacher,
             'form': form,
             'course_and_class_dict': json.dumps(course_and_class_dict),
         }
@@ -231,8 +238,10 @@ def modify_homework(request, homework_id):
             homework.ddl = form.cleaned_data['ddl']
             homework.save()
         else:
-            return HttpResponse('<script>alert("failed!");</script>')
-        return HttpResponse('Add succeeded!')
+            #return HttpResponse('<script>alert("failed!");</script>')
+            return redirect(reverse('teacher_index')+'?fail')
+        #return HttpResponse('Add succeeded!')
+        return redirect(reverse('teacher_index')+'?success')
     else:
         initial = {
                 'clazz': homework.clazz,
@@ -265,8 +274,10 @@ def delete_homework(request, homework_id):
             if form.cleaned_data['confirm'] == 'True':
                 homework.delete()
         else:
-            return HttpResponse('<script>alert("failed!");</script>')
-        return HttpResponse('Add succeeded!')
+            #return HttpResponse('<script>alert("failed!");</script>')
+            return redirect(reverse('teacher_index')+'?fail')
+        #return HttpResponse('Add succeeded!')
+        return redirect(reverse('teacher_index')+'?success')
     else:
         form = DeleteForm(initial={'confirm': 'True'})
         context = {
@@ -311,8 +322,8 @@ def teacher_check_detail(request, finish_id):
             finish.checked = True
             finish.save()
         else:
-            return HttpResponse('<script>alert("failed!");</script>')
-        return HttpResponse('Add succeeded!')
+            return redirect(reverse('teacher_index')+'?fail')
+        return redirect(reverse('teacher_index')+'?success')
     else:
         teacher = Teacher.objects.get(user=request.user)
         initial = {
@@ -351,8 +362,8 @@ def add_notification(request):
             new_notification = Notification(clazz=clazz, title=title, content=content, pub_date=timezone.localtime(timezone.now()), publisher=teacher)
             new_notification.save()
         else:
-            return HttpResponse('<script>alert("failed!");</script>')
-        return HttpResponse('Add succeeded!')
+            return redirect(reverse('teacher_index')+'?fail')
+        return redirect(reverse('teacher_index')+'?success')
     else:
         form = NotificationForm()
         course_and_class_dict = GenerateCourseAndClassDict(teacher)
@@ -378,8 +389,8 @@ def modify_notification(request, notification_id):
             notification.content = form.cleaned_data['content']
             notification.save()
         else:
-            return HttpResponse('<script>alert("failed!");</script>')
-        return HttpResponse('Modify succeeded!')
+            return redirect(reverse('teacher_index')+'?fail')
+        return redirect(reverse('teacher_index')+'?success')
     else:
         initial = {
                 'clazz': notification.clazz,
@@ -412,8 +423,8 @@ def delete_notification(request, notification_id):
             if form.cleaned_data['confirm'] == 'True':
                 notification.delete()
         else:
-            return HttpResponse('<script>alert("failed!");</script>')
-        return HttpResponse('delete succeeded!')
+            return redirect(reverse('teacher_index')+'?fail')
+        return redirect(reverse('teacher_index')+'?success')
     else:
         form = DeleteForm(initial={'confirm': 'True'})
         context = {
@@ -456,8 +467,8 @@ def add_resource(request, course_id):
         if form.is_valid():
             form.save()
         else:
-            return HttpResponse('<script>alert("failed!");</script>')
-        return HttpResponse('Add succeeded!')
+            return redirect(reverse('teacher_index')+'?fail')
+        return redirect(reverse('teacher_index')+'?success')
     else:
         initial = {
                 'course': course,
@@ -500,8 +511,8 @@ def modify_resource(request, resource_id):
                 resource.simple_file = None
             resource.save()
         else:
-            return HttpResponse('<script>alert("failed!");</script>')
-        return HttpResponse('Add succeeded!')
+            return redirect(reverse('teacher_index')+'?fail')
+        return redirect(reverse('teacher_index')+'?success')
     else:
         initial = {
                 'course': resource.course,
@@ -535,8 +546,8 @@ def delete_resource(request, resource_id):
             if form.cleaned_data['confirm'] == 'True':
                 resource.delete()
         else:
-            return HttpResponse('<script>alert("failed!");</script>')
-        return HttpResponse('Add succeeded!')
+            return redirect(reverse('teacher_index')+'?fail')
+        return redirect(reverse('teacher_index')+'?success')
     else:
         form = DeleteForm(initial={'confirm': 'True'})
         context = {
@@ -558,12 +569,14 @@ def student_index(request):
         for h in homework_set:
             h = homework_status(student, h)
         article_set = Article.objects.all().order_by('-pub_date')
+        message = request.get_full_path().split('?')[-1]
         context = {
             'student': student,
             'notification_set': notification_set,
             'class_set': class_set,
             'homework_set': homework_set,
             'article_set': article_set,
+            'message': message,
         }
         return render(request, 'display/student_index.html', context)
     else:
@@ -685,8 +698,8 @@ def student_upload_homework(request, finish_id):
             finish.checked = False
             finish.save()
         else:
-            return HttpResponse('<script>alert("failed!");</script>')
-        return HttpResponse('Add succeeded!')
+            return redirect(reverse('student_index')+'?fail')
+        return redirect(reverse('student_index')+'?success')
     else:
         return redirect(reverse('index'))
 
@@ -697,10 +710,12 @@ def guest_index(request):
         teacher_set = Teacher.objects.all()
         form = NamePass()
         course_set = Course.objects.all()
+        message = request.get_full_path().split('?')[-1]
         context = {
             'course_set': course_set,
             'teacher_set': teacher_set,
             'form': form,
+            'message': message,
         }
         return render(request, 'display/guest_index.html', context)
     else:
@@ -739,8 +754,8 @@ def modify_teacher_description(request):
             teacher.other= form.cleaned_data['other']
             teacher.save()
         else:
-            return HttpResponse('<script>alert("failed!");</script>')
-        return HttpResponse('Modify succeeded!')
+            return redirect(reverse('teacher_index')+'?fail')
+        return redirect(reverse('teacher_index')+'?success')
     else:
         initial = {
                 'name': teacher.name, 'experience': teacher.experience, 'research': teacher.research, 'style': teacher.style,
@@ -805,8 +820,8 @@ def modify_course(request, course_id):
             course.project = form.cleaned_data['project']
             course.save()
         else:
-            return HttpResponse('<script>alert("failed!");</script>')
-        return HttpResponse('Add succeeded!')
+            return redirect(reverse('teacher_index')+'?fail')
+        return redirect(reverse('teacher_index')+'?success')
     else:
         initial = {
                 'name': course.name,
@@ -847,8 +862,8 @@ def add_article(request):
         if form.is_valid():
             form.save()
         else:
-            return HttpResponse('<script>alert("failed!");</script>')
-        return HttpResponse('Add succeeded!')
+            return redirect(reverse('teacher_index')+'?fail')
+        return redirect(reverse('teacher_index')+'?success')
     else:
         form = ArticleForm(initial={'teacher': teacher})
         context = {
@@ -881,8 +896,8 @@ def modify_article(request, article_id):
                 pass
             article.save()
         else:
-            return HttpResponse('<script>alert("failed!");</script>')
-        return HttpResponse('Add succeeded!')
+            return redirect(reverse('teacher_index')+'?fail')
+        return redirect(reverse('teacher_index')+'?success')
     else:
         initial = {
                 'teacher': article.teacher, 'title': article.title, 'content': article.content,
@@ -909,8 +924,8 @@ def delete_article(request, article_id):
             if form.cleaned_data['confirm'] == 'True':
                 article.delete()
         else:
-            return HttpResponse('<script>alert("failed!");</script>')
-        return HttpResponse('Add succeeded!')
+            return redirect(reverse('teacher_index')+'?fail')
+        return redirect(reverse('teacher_index')+'?success')
     else:
         form = DeleteForm(initial={'confirm': 'True'})
         context = {

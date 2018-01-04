@@ -216,6 +216,30 @@
 	<script type="text/javascript">
     	$(document).ready(function(){
 
+        {% if message %}
+        {% if message == 'success' %}
+        	$.notify({
+            	icon: 'pe-7s-gift',
+                message: "操作成功！"
+
+            },{
+                type: 'success',
+                timer: 4000
+            });
+
+        {% endif %}
+        {% if message == 'fail' %}
+        	$.notify({
+            	icon: 'pe-7s-gift',
+                message: "登录失败！"
+
+            },{
+                type: 'danger',
+                timer: 4000
+            });
+
+        {% endif %}
+        {% endif %}
 
     	});
 	</script>
