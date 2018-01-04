@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+<head>
+    {% load static %}
+	<meta charset="utf-8" />
+    <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.ico' %}">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+	<title>教师简介</title>
+
+	<meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport' />
+    <meta name="viewport" content="width=device-width" />
+
+
+    <!-- Bootstrap core CSS     -->
+    <link href="{% static 'assets/css/bootstrap.min.css' %}" rel="stylesheet" />
+
+    <!-- Animation library for notifications   -->
+    <link href="{% static 'assets/css/animate.min.css' %}" rel="stylesheet"/>
+
+    <!--  Light Bootstrap Table core CSS    -->
+    <link href="{% static 'assets/css/light-bootstrap-dashboard.css' %}" rel="stylesheet"/>
+
+
+    <!--  CSS for Demo Purpose, don't include it in your project     -->
+    <link href="{% static 'assets/css/demo.css' %}" rel="stylesheet" />
+
+
+    <!--     Fonts and icons     -->
+    <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href='http://fonts.googleapis.com/css?family=Roboto:400,700,300' rel='stylesheet' type='text/css'>
+    <link href="{% static 'assets/css/pe-icon-7-stroke.css' %}" rel="stylesheet" />
+
+</head>
+<body>
+
+<div class="wrapper">
+    <div class="sidebar" data-color="green" data-image="{% static 'assets/img/sidebar-3.jpg' %}">
+
+    <!--
+
+        Tip 1: you can change the color of the sidebar using: data-color="blue | azure | green | orange | red | purple"
+        Tip 2: you can also add an image using data-image tag
+
+    -->
+
+    	<div class="sidebar-wrapper">
+            <div class="logo">
+                <a href="" class="simple-text">
+                    ZJUSE
+                </a>
+            </div>
+
+            <ul class="nav">
+                <li>
+                    <a href="#experience">
+                        <i class="pe-7s-angle-right-circle"></i>
+                        <p>以往教学</p>
+                    </a>
+                </li>
+                <li>
+                    <a href="#research">
+                        <i class="pe-7s-angle-right-circle"></i>
+                        <p>科研成果</p>
+                    </a>
+                </li>
+                <li>
+                    <a href="#style">
+                        <i class="pe-7s-angle-right-circle"></i>
+                        <p>教学风格</p>
+                    </a>
+                </li>
+                <li>
+                    <a href="#publication">
+                        <i class="pe-7s-angle-right-circle"></i>
+                        <p>出版书籍</p>
+                    </a>
+                </li>
+                <li>
+                    <a href="#honor">
+                        <i class="pe-7s-angle-right-circle"></i>
+                        <p>所获荣誉</p>
+                    </a>
+                </li>
+                <li>
+                    <a href="#contact">
+                        <i class="pe-7s-angle-right-circle"></i>
+                        <p>联系方式</p>
+                    </a>
+                </li>
+                <li>
+                    <a href="#other">
+                        <i class="pe-7s-angle-right-circle"></i>
+                        <p>备注</p>
+                    </a>
+                </li>
+                <li>
+                    <a href="#classes">
+                        <i class="pe-7s-angle-right-circle"></i>
+                        <p>执教班级</p>
+                    </a>
+                </li>
+                <li>
+                    <a href="#articles">
+                        <i class="pe-7s-angle-right-circle"></i>
+                        <p>最新文章</p>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="main-panel">
+        <nav class="navbar navbar-default navbar-fixed">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navigation-example-2">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="#"></a>
+                </div>
+                <div class="collapse navbar-collapse">
+                    <ul class="nav navbar-nav navbar-left">
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                <i class="fa fa-cog"></i>
+								<p class="hidden-lg hidden-md">主题设置</p>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a onclick="changeColor('green')">草木绿</a></li>
+                                <li><a onclick="changeColor('azure')">晴空蓝</a></li>
+                                <li><a onclick="changeColor('orange')">秋日黄</a></li>
+                                <li><a onclick="changeColor('blue')">湖水蓝</a></li>
+                                <li><a onclick="changeColor('red')">枫叶红</a></li>
+                                <li><a onclick="changeColor('purple')">晚霞紫</a></li>
+                            </ul>
+                        </li>
+                        <li class="dropdown">
+                              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                    <i class="fa fa-globe"></i>
+                                    <b class="caret hidden-lg hidden-md"></b>
+									<p class="hidden-lg hidden-md">
+										<b class="caret"></b>
+                                        语言/Language
+									</p>
+                              </a>
+                              <ul class="dropdown-menu">
+                                <li><a href="#">中文</a></li>
+                                <li><a href="#">English</a></li>
+                              </ul>
+                        </li>
+                        <li>
+                           <a href="">
+                                <i class="fa fa-search"></i>
+								<p class="hidden-lg hidden-md">Search</p>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <ul class="nav navbar-nav navbar-right">
+						<li class="separator hidden-lg"></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+
+        <div class="content">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card">
+
+                            <div class="header">
+                                <a name="experience"></a>
+                                <h4 class="title pull-left">以往教学</h4>
+                            </div>
+                            <div class="content">
+                                <div class="row">
+                                    <hr>
+                                    <div class="col-md-12">
+                                        <p>
+                                        {{ teacher.experience }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="header">
+                                <a name="research"></a>
+                                <h4 class="title pull-left">科研成果</h4>
+                            </div>
+                            <div class="content">
+                                <div class="row">
+                                    <hr>
+                                    <div class="col-md-12">
+                                        <p>
+                                        {{ teacher.research }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="header">
+                                <a name="style"></a>
+                                <h4 class="title pull-left">教学风格</h4>
+                            </div>
+                            <div class="content">
+                                <div class="row">
+                                    <hr>
+                                    <div class="col-md-12">
+                                        <p>
+                                        {{ teacher.style }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="header">
+                                <a name="publication"></a>
+                                <h4 class="title pull-left">出版书籍</h4>
+                            </div>
+                            <div class="content">
+                                <div class="row">
+                                    <hr>
+                                    <div class="col-md-12">
+                                        <p>
+                                        {{ teacher.publication }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="header">
+                                <a name="honor"></a>
+                                <h4 class="title pull-left">所获荣誉</h4>
+                            </div>
+                            <div class="content">
+                                <div class="row">
+                                    <hr>
+                                    <div class="col-md-12">
+                                        <p>
+                                        {{ teacher.honor }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="header">
+                                <a name="contact"></a>
+                                <h4 class="title pull-left">联系方式</h4>
+                            </div>
+                            <div class="content">
+                                <div class="row">
+                                    <hr>
+                                    <div class="col-md-12">
+                                        <p>
+                                        {{ teacher.contact }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="header">
+                                <a name="classes"></a>
+                                <h4 class="title pull-left">执教班级</h4>
+                            </div>
+                            <div class="content">
+                                <div class="row">
+                                    <hr>
+                                    <div class="col-md-12">
+                                        <ul>
+                                            {% for class in class_set %}
+                                            <li>
+                                                <a href="{% url 'course_detail' class.course.id %}">{{ class.course.name }}</a>
+                                                {{ class.name }}
+                                                {{ class.time }}
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="header">
+                                <a name="articles"></a>
+                                <h4 class="title pull-left">最新文章</h4>
+                            </div>
+                            <div class="content">
+                                <div class="row">
+                                    <hr>
+                                    <div class="col-md-12">
+                                        <ul>
+                                            {% for article in article_set %}
+                                            <li>
+                                                <a href="{% url 'article_detail' article.id %}">{{ article.title }}</a>
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+
+
+                     <div class="col-md-4">
+                        <div class="card card-user">
+                            <div class="image">
+                                <img src="https://ununsplash.imgix.net/photo-1431578500526-4d9613015464?fit=crop&fm=jpg&h=300&q=75&w=400" alt="..."/>
+                            </div>
+                            <div class="content">
+                                <div class="author">
+                                     <a href="#">
+                                    <img class="avatar border-gray" src="{% static 'assets/img/faces/face-3.jpg' %}" alt="..."/>
+
+                                    <h4 class="title">{{ teacher.name }}<br />
+                                      </h4>
+                                    </a>
+                                </div>
+                                <p class="description text-center">
+                                浙江大学软件工程系列课程教师，教学经验丰富，教学水平优秀，教学成果丰硕。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+
+				</div>
+            </div>
+        </div>
+
+
+        <footer class="footer">
+            <div class="container-fluid">
+                <p class="copyright pull-right">
+                    &copy; <script>document.write(new Date().getFullYear())</script> <a href="">ZJUSE GROUP 12</a>
+                </p>
+            </div>
+        </footer>
+
+    </div>
+</div>
+
+
+
+
+</body>
+
+    <!--   Core JS Files   -->
+    <script src="{% static 'assets/js/jquery.3.2.1.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'assets/js/bootstrap.min.js' %}" type="text/javascript"></script>
+
+	<!--  Charts Plugin -->
+    <script src="{% static 'assets/js/chartist.min.js' %}"></script>
+
+    <!--  Notifications Plugin    -->
+    <script src="{% static 'assets/js/bootstrap-notify.js' %}"></script>
+
+    <!-- Light Bootstrap Table Core javascript and methods for Demo purpose -->
+    <script src="{% static 'assets/js/light-bootstrap-dashboard.js' %}"></script>
+
+	<!-- Light Bootstrap Table DEMO methods, don't include it in your project! -->
+    <script src="{% static 'assets/js/demo.js' %}"></script>
+
+	<script type="text/javascript">
+    	$(document).ready(function(){
+
+
+    	});
+	</script>
+    <script>
+        function changeColor(color){
+            document.getElementsByClassName('sidebar')[0].setAttribute('data-color', color);
+        }
+    </script>
+
+</html>
