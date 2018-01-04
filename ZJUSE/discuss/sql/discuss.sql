@@ -1,0 +1,1 @@
+insert into discuss_grouplist(name) values("Public");
