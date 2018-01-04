@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+    {% load static %}
+	<meta charset="utf-8" />
+    <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.ico' %}">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+	<title>浙江大学软件工程教学辅助系统论坛</title>
+
+	<meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport' />
+    <meta name="viewport" content="width=device-width" />
+
+
+    <!-- Bootstrap core CSS     -->
+    <link href="{% static 'assets/css/bootstrap.min.css' %}" rel="stylesheet" />
+
+    <!-- Animation library for notifications   -->
+    <link href="{% static 'assets/css/animate.min.css' %}" rel="stylesheet"/>
+
+    <!--  Light Bootstrap Table core CSS    -->
+    <link href="{% static 'assets/css/light-bootstrap-dashboard.css' %}" rel="stylesheet"/>
+
+
+    <!--  CSS for Demo Purpose, don't include it in your project     -->
+    <link href="{% static 'assets/css/demo.css' %}" rel="stylesheet" />
+
+
+    <!--     Fonts and icons     -->
+    <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href='http://fonts.googleapis.com/css?family=Roboto:400,700,300' rel='stylesheet' type='text/css'>
+    <link href="{% static 'assets/css/pe-icon-7-stroke.css' %}" rel="stylesheet" />
+
+</head>
+<body>
+
+<div class="wrapper">
+    <div class="sidebar" data-color="purple" data-image="{% static 'assets/img/sidebar-5.jpg' %}">
+
+    <!--
+
+        Tip 1: you can change the color of the sidebar using: data-color="blue | azure | green | orange | red | purple"
+        Tip 2: you can also add an image using data-image tag
+
+    -->
+    <!--左侧导航栏-->
+        <div class="sidebar-wrapper">
+            <div class="logo">
+                <a href="#" class="simple-text">
+                    ZJUSE Forum
+                </a>
+            </div>
+
+            <ul class="nav" id="myTab">
+                {% if authority %}
+                <li>
+                    <a data-toggle="modal" data-target="#Delete">
+                        <i class="pe-7s-tools"></i>
+                        <p>删除帖子</p>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+    <!--顶部导航栏-->
+    <div class="main-panel">
+        <nav class="navbar navbar-default navbar-fixed">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="#">欢迎 {{ user }} ！</a>
+                </div>
+                <div class="collapse navbar-collapse">
+                    <ul class="nav navbar-nav navbar-left">
+                        <li>
+                            
+                        </li>
+                    </ul>
+
+                    <ul class="nav navbar-nav navbar-right">
+                        <li>
+                            {% if posts.group.name == 'Public' %}
+                           <a href="/forum">
+                                <p>论坛主页</p>
+                            </a>
+                            {% else %}
+                            <a href="/forum/group_detail/{{posts.group.g_id}}">
+                                <p>小组主页</p>
+                            </a>
+                            {% endif %}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!--主要内容-->
+        <div class="tab-content">
+            <div class="tab-pane active" id="Public">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="caption" style="margin-left: 20px">
+                            <h3>帖子内容</h3>
+                            <div class="thumbnail" style="background-color: #ECF5FF">
+                                <div class="caption" >
+                                    <h3>
+                                        {{posts.user}}
+                                    </h3>
+                                    <p>
+                                        {{posts.p_time}}
+                                    </p>
+                                    </hr>
+                                    <p>
+                                        {{posts.p_content}}
+                                    </p>                            
+                                </div>
+                            </div>
+                            <hr>
+                            <h3>回帖列表</h3>
+                            {% for r in replylist %}
+                            <div class="thumbnail">
+                                
+                                <div class="caption">
+                                    <h3>
+                                        {{r.user}}
+                                    </h3>
+                                    <p>
+                                        {{r.r_time}}
+                                    </p>
+                                    </hr>
+                                    <p>
+                                        {{r.r_content}}
+                                    </p>                            
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center">
+            <ul class="pagination">
+                <li><a href="{% url 'posts_detail' posts.p_id 1 %}">&laquo;</a></li>
+                {% if page >= 3 %}
+                <li><a href="{% url 'posts_detail' posts.p_id ffp %}">{{ ffp }}</a></li>
+                {% endif %}
+                {% if page >= 2 %}
+                <li><a href="{% url 'posts_detail' posts.p_id fp %}">{{ fp }}</a></li>
+                {% endif %}
+                <li><a href="#">{{ page }}</a></li>
+                {% if np <= pc %}
+                <li><a href="{% url 'posts_detail' posts.p_id np %}">{{ np }}</a></li>
+                {% endif %}
+                {% if nnp <= pc %}
+                <li><a href="{% url 'posts_detail' posts.p_id nnp %}">{{ nnp }}</a></li>
+                {% endif %}
+                <li><a href="{% url 'posts_detail' posts.p_id pc %}">&raquo;</a></li>
+            </ul>
+        </div>
+        
+
+        <div>
+            <form id="comment-form" action="{% url 'posts_reply' posts.p_id %}" method="post" >
+                {% csrf_token %}
+                <textarea id="comment" name="content" class="form-control" rows="5" placeholder="请输入回帖，最多3000字"></textarea>
+                <button type="submit" style="background-color: #EA0000;"  class="btn btn-comments center"><font color="#000000">提交评论</font></button>
+            </form>
+        </div>
+
+        
+
+    </div>
+</div>
+
+</body>
+
+<div class="modal fade" id="Delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <form id="Delete" class="form" action="{% url 'posts_delete' posts.p_id %}" method="post">
+    {% csrf_token %}
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <!--Head-->
+      <div class="modal-header">
+        <div class="input-group">
+          <span class="input-group-addon red-text text-center" style="font-size:20px;">确认要删除帖子吗？</span>
+        </div>
+      </div>
+      <!--Body-->
+      <!--Foot-->
+      <div class="modal-footer">
+        <input class="btn btn-default" type="submit" value="确认" id="submit">
+        <button type="button" class="btn btn-default" 
+            data-dismiss="modal">关闭
+        </button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+  </form>
+</div>
+
+<div class="modal fade" id="Reply" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <form id="Reply" class="form" action="{% url 'posts_reply' posts.p_id %}" method="post">
+    {% csrf_token %}
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <!--Head-->
+      <div class="modal-header">
+        <div class="input-group">
+          <span class="input-group-addon red-text text-center" style="font-size:20px;">回复帖子</span>
+        </div>
+      </div>
+      <!--Body-->
+      <div class="modal-body">
+        <div class="input-group">
+          <span class="input-group-addon"><strong>内容</strong></span>
+          <textarea class="form-control" rows="10" name="content" id="content"></textarea>
+        </div>
+      </div>
+      <!--Foot-->
+      <div class="modal-footer">
+        <input class="btn btn-default" type="submit" value="确认" id="submit">
+        <button type="button" class="btn btn-default" 
+            data-dismiss="modal">关闭
+        </button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+  </form>
+</div>
+
+
+    <!--   Core JS Files   -->
+    <script src="{% static 'assets/js/jquery.3.2.1.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'assets/js/bootstrap.min.js' %}" type="text/javascript"></script>
+
+	<!--  Charts Plugin -->
+    <script src="{% static 'assets/js/chartist.min.js' %}"></script>
+
+    <!--  Notifications Plugin    -->
+    <script src="{% static 'assets/js/bootstrap-notify.js' %}"></script>
+
+    <!-- Light Bootstrap Table Core javascript and methods for Demo purpose -->
+    <script src="{% static 'assets/js/light-bootstrap-dashboard.js' %}"></script>
+
+
+    <script>
+        function changeColor(color){
+            document.getElementsByClassName('sidebar')[0].setAttribute('data-color', color);
+        }
+    </script>
+
+</html>
