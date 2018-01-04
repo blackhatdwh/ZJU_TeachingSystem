@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'discuss',
     'display',
-    'discuss',
     'mptt',
     'haystack',
     'widget_tweaks',

@@ -89,12 +89,14 @@ def posts_public(request,group_id):
 	newp.p_name = title
 	newp.p_content = content
 	newp.p_read = 0
+	newp.p_rc = 0
 	key = group_id
 	newp.group = GroupList.objects.get(g_id=int(key))
 	newp.p_time = timezone.localtime(timezone.now())
 	newp.save()
 	replylist=[]
-	return render(request, 'posts_detail.html', {'posts': newp, 'authority': True, 'replylist':replylist, 'user':pu})
+	s = '<script>alert("发布成功！");location.replace("/forum/posts_detail/'+str(newp.p_id)+'/'+'1'+'");</script>'
+	return HttpResponse(s)
 
 def posts_delete(request,post_id):
 	post = Posts.objects.get(p_id = post_id)
