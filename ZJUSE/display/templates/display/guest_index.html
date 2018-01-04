@@ -141,7 +141,7 @@
                             <!--<a href="{% url 'login' %}">
                                 <p>登录</p>
                             </a>-->
-        <form action="{% url 'login' %}" method="post">
+        <form action="{% url 'login' %}" method="post" style="padding-top: 3%;">
             {% csrf_token %}
             {{ form }}
             <input type="submit" value="Submit" />
