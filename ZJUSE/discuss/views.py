@@ -19,13 +19,13 @@ def index(request):
 		g = GroupList()
 		g.name="Public"
 		g.save()
-	if request.user.is_authenticated():
+	if request.user.is_authenticated:
 		return redirect(reverse('user_discuss_index'))
 	else:
 		return redirect(reverse('guest_discuss_index'))
 
 def user_discuss_index(request):
-	if request.user.is_authenticated():
+	if request.user.is_authenticated:
 		if request.user.groups.all().first().name == 'Teacher':
 			teacher = Teacher.objects.get(user=request.user)
 			ty = '老师'
@@ -55,9 +55,9 @@ def guest_discuss_index(request):
 	return render(request, 'guest_discuss_index.html', context)
 
 def posts_detail(request, posts_id, page):
-	if request.user.is_authenticated() and request.user.groups.all().first().name == 'Student':
+	if request.user.is_authenticated and request.user.groups.all().first().name == 'Student':
 		u = Student.objects.get(user=request.user)
-	elif request.user.is_authenticated() and request.user.groups.all().first().name == 'Teacher':
+	elif request.user.is_authenticated and request.user.groups.all().first().name == 'Teacher':
 		u = Teacher.objects.get(user=request.user)
 	else:
 		u = '游客'
@@ -79,7 +79,7 @@ def posts_detail(request, posts_id, page):
 	return render(request, 'posts_detail.html', {'posts': posts, 'authority': authority, 'replylist':replylist, 'user':u, 'page':int(page), 'pc':pc, 'ffp':ffp, 'fp':fp, 'np':np, 'nnp':nnp})
 
 def posts_public(request,group_id):
-	if request.user.is_authenticated():
+	if request.user.is_authenticated:
 		pu = request.user
 	print(request)
 	title = request.POST['title']
@@ -110,7 +110,7 @@ def posts_delete(request,post_id):
 
 def posts_reply(request,post_id):
 	newr = Reply()
-	if request.user.is_authenticated():
+	if request.user.is_authenticated:
 		pu = request.user
 		newr.user = pu
 	else:
@@ -129,7 +129,7 @@ def posts_reply(request,post_id):
 	return HttpResponse(s)
 
 def group_list(request):
-	if request.user.is_authenticated():
+	if request.user.is_authenticated:
 		u = request.user
 		if request.user.groups.all().first().name == 'Teacher':
 			ty = '老师'
@@ -142,7 +142,7 @@ def group_list(request):
 	return render(request, 'user_discuss_group.html',{'grouplist':grouplist,'user':u,'ty':ty,'invlist':invlist})
 	
 def group_add(request):
-	if request.user.is_authenticated():
+	if request.user.is_authenticated:
 		u = request.user
 	else:
 		return redirect(reverse('discuss_index'))
@@ -154,7 +154,7 @@ def group_add(request):
 	return redirect(reverse('group_list'))
 
 def group_quit(request,group_id):
-	if request.user.is_authenticated():
+	if request.user.is_authenticated:
 		u = request.user
 	else:
 		return redirect(reverse('discuss_index'))
@@ -166,7 +166,7 @@ def group_quit(request,group_id):
 		return redirect(reverse('group_list'))
 
 def group_delete(request,group_id):
-	if request.user.is_authenticated():
+	if request.user.is_authenticated:
 		u = request.user
 	else:
 		return redirect(reverse('discuss_index'))
@@ -183,7 +183,7 @@ def group_delete(request,group_id):
 		return HttpResponse('<script>alert("你不是小组主持人！");location.replace("/forum/");</script>')
 
 def group_detail(request,group_id):
-	if request.user.is_authenticated():
+	if request.user.is_authenticated:
 		u = request.user
 	else:
 		return redirect(reverse('discuss_index'))
@@ -220,7 +220,7 @@ def invitation_accept(request,invid):
 	return redirect(reverse('group_list'))
 
 def invitation_add(request):
-	if request.user.is_authenticated():
+	if request.user.is_authenticated:
 		u = request.user
 	else:
 		return redirect(reverse('discuss_index'))

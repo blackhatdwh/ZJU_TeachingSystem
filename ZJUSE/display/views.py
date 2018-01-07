@@ -105,18 +105,18 @@ def change_password_using_question(request):
 
 #done
 def index(request):
-    if request.user.is_authenticated() and request.user.profile.answer == '':
+    if request.user.is_authenticated and request.user.profile.answer == '':
         return redirect(reverse('set_password_question'))
-    if request.user.is_authenticated() and request.user.groups.all().first().name == 'Teacher':
+    if request.user.is_authenticated and request.user.groups.all().first().name == 'Teacher':
         return redirect(reverse('teacher_index'))
-    elif request.user.is_authenticated() and request.user.groups.all().first().name == 'Student':
+    elif request.user.is_authenticated and request.user.groups.all().first().name == 'Student':
         return redirect(reverse('student_index'))
     else:
         return redirect(reverse('guest_index'))
     
 #done
 def teacher_index(request):
-    if request.user.is_authenticated() and request.user.groups.all().first().name == 'Teacher':
+    if request.user.is_authenticated and request.user.groups.all().first().name == 'Teacher':
         teacher = Teacher.objects.get(user=request.user)
         notification_set = Notification.objects.filter(publisher=teacher).order_by('-pub_date')
         teaches_set = Teaches.objects.filter(teacher=teacher)
@@ -154,7 +154,7 @@ def teacher_index(request):
 
 #done
 def teacher_my_class(request, class_id):
-    if request.user.is_authenticated() and request.user.groups.all().first().name == 'Teacher':
+    if request.user.is_authenticated and request.user.groups.all().first().name == 'Teacher':
         teacher = Teacher.objects.get(user=request.user)
         clazz = Class.objects.get(id=class_id)
         course = clazz.course
@@ -289,7 +289,7 @@ def delete_homework(request, homework_id):
 
 #done
 def teacher_check_homework(request, homework_id):
-    if request.user.is_authenticated() and request.user.groups.all().first().name == 'Teacher':
+    if request.user.is_authenticated and request.user.groups.all().first().name == 'Teacher':
         teacher = Teacher.objects.get(user=request.user)
         homework = Homework.objects.get(id=homework_id)
         finished_set = Finish.objects.filter(homework=homework).exclude(upload_time__isnull=True)
@@ -348,7 +348,7 @@ def notification_detail(request, notification_id):
     return render(request, 'display/notification_detail.html', {'notification': notification, 'authority': authority})
 
 def add_notification(request):
-    if request.user.is_authenticated() and request.user.groups.all().first().name == 'Teacher':
+    if request.user.is_authenticated and request.user.groups.all().first().name == 'Teacher':
         teacher = Teacher.objects.get(user=request.user)
     else:
         #you are not a teacher
@@ -375,7 +375,7 @@ def add_notification(request):
         return render(request, 'display/add_notification.html', context)
 
 def modify_notification(request, notification_id):
-    if request.user.is_authenticated() and request.user.groups.all().first().name == 'Teacher':
+    if request.user.is_authenticated and request.user.groups.all().first().name == 'Teacher':
         teacher = Teacher.objects.get(user=request.user)
         notification = Notification.objects.get(id=notification_id)
     else:
@@ -408,7 +408,7 @@ def modify_notification(request, notification_id):
         return render(request, 'display/modify_notification.html', context)
 
 def delete_notification(request, notification_id):
-    if request.user.is_authenticated() and request.user.groups.all().first().name == 'Teacher':
+    if request.user.is_authenticated and request.user.groups.all().first().name == 'Teacher':
         teacher = Teacher.objects.get(user=request.user)
     else:
         #you are not a teacher
@@ -435,7 +435,7 @@ def delete_notification(request, notification_id):
 
 def resource_detail(request, resource_id):
     resource = Resource.objects.get(id=resource_id)
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         access_authority = True
     else:
         access_authority = False
@@ -558,7 +558,7 @@ def delete_resource(request, resource_id):
 
 #partly done
 def student_index(request):
-    if request.user.is_authenticated() and request.user.groups.all().first().name == 'Student':
+    if request.user.is_authenticated and request.user.groups.all().first().name == 'Student':
         student = Student.objects.get(user=request.user)
         join_set = Join.objects.filter(student=student)
         class_set = set()
@@ -584,7 +584,7 @@ def student_index(request):
 
 #done
 def student_my_class(request, class_id):
-    if request.user.is_authenticated() and request.user.groups.all().first().name == 'Student':
+    if request.user.is_authenticated and request.user.groups.all().first().name == 'Student':
         student = Student.objects.get(user=request.user)
         requested_clazz = Class.objects.get(id=class_id)
         course = requested_clazz.course
@@ -621,7 +621,7 @@ def student_my_class(request, class_id):
 
 #done
 def student_others_class(request, class_id):
-    if request.user.is_authenticated() and request.user.groups.all().first().name == 'Student':
+    if request.user.is_authenticated and request.user.groups.all().first().name == 'Student':
         student = Student.objects.get(user=request.user)
         clazz = Class.objects.get(id=class_id)
         course = clazz.course
@@ -638,7 +638,7 @@ def student_others_class(request, class_id):
 
 #partly done
 def student_view_homework(request, homework_id):
-    if request.user.is_authenticated() and request.user.groups.all().first().name == 'Student':
+    if request.user.is_authenticated and request.user.groups.all().first().name == 'Student':
         student = Student.objects.get(user=request.user)
         homework = Homework.objects.get(id=homework_id)
         homework = homework_status(student, homework)
@@ -706,7 +706,7 @@ def student_upload_homework(request, finish_id):
 
 #partly done
 def guest_index(request):
-    if not request.user.is_authenticated():
+    if not request.user.is_authenticated:
         teacher_set = Teacher.objects.all()
         form = NamePass()
         course_set = Course.objects.all()
@@ -771,7 +771,7 @@ def modify_teacher_description(request):
 #done
 def course_detail(request, course_id):
     course = Course.objects.get(id=course_id)
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         resource_set = Resource.objects.filter(course=course)
     else:
         resource_set = Resource.objects.filter(course=course).exclude(simple_file__isnull=True)
@@ -850,7 +850,7 @@ def article_detail(request, article_id):
     return render(request, 'display/article_detail.html', {'article': article, 'authority': authority})
 
 def add_article(request):
-    if request.user.is_authenticated() and request.user.groups.all().first().name == 'Teacher':
+    if request.user.is_authenticated and request.user.groups.all().first().name == 'Teacher':
         teacher = Teacher.objects.get(user=request.user)
     else:
         #you are not a teacher
@@ -873,7 +873,7 @@ def add_article(request):
         return render(request, 'display/add_article.html', context)
 
 def modify_article(request, article_id):
-    if request.user.is_authenticated() and request.user.groups.all().first().name == 'Teacher':
+    if request.user.is_authenticated and request.user.groups.all().first().name == 'Teacher':
         teacher = Teacher.objects.get(user=request.user)
     else:
         #you are not a teacher
@@ -910,7 +910,7 @@ def modify_article(request, article_id):
         return render(request, 'display/modify_article.html', context)
 
 def delete_article(request, article_id):
-    if request.user.is_authenticated() and request.user.groups.all().first().name == 'Teacher':
+    if request.user.is_authenticated and request.user.groups.all().first().name == 'Teacher':
         teacher = Teacher.objects.get(user=request.user)
     else:
         #you are not a teacher
@@ -937,7 +937,7 @@ def delete_article(request, article_id):
 
 @login_required
 def teacher_course_list(request):
-    if request.user.is_authenticated() and request.user.groups.all().first().name == 'Teacher':
+    if request.user.is_authenticated and request.user.groups.all().first().name == 'Teacher':
         teacher = Teacher.objects.get(user=request.user)
         course_set = Course.objects.all()
         context = {
@@ -950,7 +950,7 @@ def teacher_course_list(request):
 
 @login_required
 def student_course_list(request):
-    if request.user.is_authenticated() and request.user.groups.all().first().name == 'Student':
+    if request.user.is_authenticated and request.user.groups.all().first().name == 'Student':
         student = Student.objects.get(user=request.user)
         course_set = Course.objects.all()
         context = {
@@ -972,7 +972,7 @@ def guest_course_list(request):
 
 @login_required
 def teacher_teacher_list(request):
-    if request.user.is_authenticated() and request.user.groups.all().first().name == 'Teacher':
+    if request.user.is_authenticated and request.user.groups.all().first().name == 'Teacher':
         teacher = Teacher.objects.get(user=request.user)
         teacher_set = Teacher.objects.all()
         context = {
@@ -985,7 +985,7 @@ def teacher_teacher_list(request):
 
 @login_required
 def student_teacher_list(request):
-    if request.user.is_authenticated() and request.user.groups.all().first().name == 'Student':
+    if request.user.is_authenticated and request.user.groups.all().first().name == 'Student':
         student = Student.objects.get(user=request.user)
         teacher_set = Teacher.objects.all()
         context = {

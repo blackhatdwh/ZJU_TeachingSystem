@@ -154,7 +154,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
-MEDIA_ROOT = '/home/weihao/Code/ZJU_TeachingSystem/ZJUSE/static/'
+MEDIA_ROOT = '/Users/like/Desktop/TEST/NewZJUSE/ZJUSE'
 STATIC_URL = '/static/'
-MEDIA_ROOT = '/home/weihao/Code/ZJU_TeachingSystem/ZJUSE/media/'
+MEDIA_ROOT = '/Users/like/Desktop/TEST/NewZJUSE/ZJUSE'
 MEDIA_URL = '/media/'
